@@ -58,8 +58,9 @@ namespace Killboard.API
             services.AddScoped<IAllianceRepository, AllianceRepository>();
             services.AddScoped<ICorporationRepository, CorporationRepository>();
             services.AddScoped<IESIService, ESIService>();
+            services.AddScoped<IKillmailService, KillmailService>();
 
-            services.AddSingleton<IKillmailService, KillmailService>();
+            services.AddSingleton<KillmailNotificationService>();
 
             services.AddControllers();
         }

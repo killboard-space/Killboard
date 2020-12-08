@@ -7,7 +7,7 @@ using Killboard.Domain.Services;
 
 namespace Killboard.Domain.Interfaces
 {
-    public interface IKillmailService
+    public interface IKillmailService : IDisposable
     {
         List<ListDetail> GetAllKillmails(ListTypes type = ListTypes.ALL, int? filter = null);
     }

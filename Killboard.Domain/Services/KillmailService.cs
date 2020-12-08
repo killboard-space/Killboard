@@ -1,46 +1,20 @@
-﻿using Killboard.Data.Models;
+﻿using System.Collections.Generic;
+using System.Linq;
+using Killboard.Data.Models;
 using Killboard.Domain.DTO.Killmail;
 using Killboard.Domain.Enums;
 using Killboard.Domain.Interfaces;
-using System.Collections.Generic;
-using System.Linq;
-using Killboard.Domain.Hubs;
-using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using TableDependency.SqlClient;
-using TableDependency.SqlClient.Base.EventArgs;
 
 namespace Killboard.Domain.Services
 {
     public class KillmailService : IKillmailService
     {
         private readonly KillboardContext _ctx;
-        private readonly IHubContext<KillmailHub> _hub;
 
-        private const string TableName = "killmails";
-
-        private static SqlTableDependency<killmails> _tableDependency;
-
-        public KillmailService(KillboardContext ctx, IConfiguration configuration, IHubContext<KillmailHub> hub)
+        public KillmailService(KillboardContext ctx)
         {
             _ctx = ctx;
-            _hub = hub;
-            
-            _tableDependency = new SqlTableDependency<killmails>(configuration["Killboard:Sql"], TableName);
-            _tableDependency.OnChanged += TableDependency_Changed;
-            _tableDependency.Start();
-        }
-
-        private void TableDependency_Changed(object sender, RecordChangedEventArgs<killmails> e)
-        {
-            if(e.Entity.finished_processing != null)
-                BroadcastKillmail(e.Entity);
-        }
-
-        private void BroadcastKillmail(killmails km)
-        {
-            _hub.Clients.All.SendAsync("NewKillmail", GetAllKillmails(ListTypes.EXACT, km.killmail_id));
         }
 
         public List<ListDetail> GetAllKillmails(ListTypes type = ListTypes.ALL, int? filter = null)
@@ -263,8 +237,7 @@ namespace Killboard.Domain.Services
 
         public void Dispose()
         {
-            _tableDependency.Stop();
-            _tableDependency.Dispose();
+            _ctx?.Dispose();
         }
     }
 }
