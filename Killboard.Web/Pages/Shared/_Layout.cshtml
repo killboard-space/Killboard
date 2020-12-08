@@ -1,0 +1,65 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - killboard.space</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" />
+    <link rel="stylesheet" href="~/font-awesome/css/all.min.css" />
+
+</head>
+<body class="bg-dark">
+    <div id="components-reconnect-modal"></div>
+    <header>
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-dark bg-dark border-bottom box-shadow mb-3">
+            <div class="container">
+                <a class="navbar-brand" asp-area="" asp-page="/index">killboard.space</a>
+                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+                        aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="navbar-collapse collapse d-sm-inline-flex flex-sm-row">
+                    <ul class="navbar-nav flex-grow-1">
+                        <li class="nav-item">
+                            <a class="nav-link text-light" asp-area="" asp-page="/index">Home</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-light" href="https://tools.killboard.space">Tools</a>
+                        </li>
+                    </ul>
+                    <div class="row float-md-right">
+                        <div class="col-md pr-0">
+                            <span class="nav-link text-light pl-0 pb-0 pr-0">@DateTime.Now.ToUniversalTime().ToString("HH:mm") UTC</span>
+                        </div>
+                        <div class="col-md pr-0">
+                            <a class="nav-link text-light" asp-area="" asp-page="/login">Login</a>
+                        </div>
+                        <div class="col-md pl-0">
+                            <a class="nav-link text-light" asp-area="" asp-page="/register">Register</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </header>
+    <div class="container">
+        <main role="main" class="pb-3">
+            @RenderBody()
+        </main>
+    </div>
+
+    <footer class="border-top footer text-muted">
+        <div class="container text-light">
+            &copy; 2020 - killboard.space - <a asp-area="" asp-page="/privacy">Privacy</a>
+        </div>
+    </footer>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="~/font-awesome/js/all.min.js"></script>
+
+    @RenderSection("Scripts", required: false)
+</body>
+</html>

@@ -1,0 +1,122 @@
+﻿@page
+@model Killboard.Web.RegisterModel
+@{
+    ViewData["Title"] = "Register";
+
+    if (!string.IsNullOrEmpty(Model.ErrorMessage))
+    {
+        <div class="m-container">
+            <br />
+            <div class="card bg-danger">
+                <div class="card-header text-light">
+                    <div class="row">
+                        <div class=" d-flex w-100 justify-content-between">
+                            <div class="col-sm-11">
+                                @Model.ErrorMessage
+                            </div>
+                            <div class="col-sm">
+                                <span class="dismiss-icon float-right" data-effect="fadeOut"><i class="fa fa-times"></i></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <br />
+        </div>
+    }
+
+    if (Model.SSO_SIGNUP)
+    {
+        <div class="card">
+            <div class="card-header">
+                <div><b>You character & scopes have been added, you can now optionally associate to an account below.</b></div>
+                <small>Associating characters to an account allows for the ability to use more tools on the site.</small>
+            </div>
+        </div>
+        <br />
+    }
+}
+<div class="card">
+    <div class="card-header">
+        <div><b>Registration is disabled!</b></div>
+        <small>Site registration has been disabled until site is finished.</small>
+    </div>
+</div>
+<br />
+<div class="card">
+    <div class="card-header">
+        Start with new account
+        <a class="btn btn-primary float-right" data-toggle="collapse" href="#acct_card_body" role="button" aria-expanded="@Model.SSO_SIGNUP" aria-controls="acct_card_body">
+            Toggle
+        </a>
+    </div>
+    <div id="acct_card_body" class="collapse">
+        <div class="card-body">
+            <div class="row col-md">
+                Please enter your info below
+            </div>
+            <hr />
+            <form class="form-horizontal" method="post">
+                <div class="form-group">
+                    <label asp-for="Username" class="col-sm-2 control-label">Username</label>
+                    <div class="col-sm-10">
+                        @if (Model.SSO_SIGNUP)
+                        {
+                            <input type="text" class="form-control" asp-for="Username" name="Username" disabled>
+                        }
+                        else
+                        {
+                            <input type="text" class="form-control" asp-for="Username" name="Username">
+                        }
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label asp-for="Email" class="col-sm-2 control-label">Email</label>
+                    <div class="col-sm-10">
+                        <input type="text" class="form-control" asp-for="Email" name="Email">
+                    </div>
+                </div>
+                <hr />
+                <div class="form-group">
+                    <label asp-for="Password" class="col-sm-2 control-label">Password</label>
+                    <div class="col-sm-10">
+                        <input type="password" class="form-control" asp-for="Password" name="Password">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label asp-for="ConfirmPassword" class="col-sm-2 control-label">Confirm Password</label>
+                    <div class="col-sm-10">
+                        <input type="password" class="form-control" asp-for="ConfirmPassword" name="ConfirmPassword">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-sm-offset-2 col-sm-10">
+                        <button type="submit" class="btn btn-primary" disabled>@Html.Raw(Model.SSO_SIGNUP ? "Register & Associate" : "Register")</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+@if (!Model.SSO_SIGNUP)
+{
+    <br />
+    <div class="card">
+        <div class="card-header">
+            Start with Eve Online account
+            <a class="btn btn-primary float-right" data-toggle="collapse" href="#eve_card_body" role="button" aria-expanded="false" aria-controls="eve_card_body">
+                Toggle
+            </a>
+        </div>
+        <div id="eve_card_body" class="collapse">
+            <div class="card-body">
+                <div class="row col-md">
+                    <a @*target="_self" onclick="window.open('@ViewData["LoginURL"]')"*@ href="#" @*href="@ViewData["LoginUrl"]"*@><img src="https://web.ccpgamescdn.com/eveonlineassets/developers/eve-sso-login-black-large.png" /></a>
+                    <small>&nbsp;<b>Note:</b> This will set your main character to this account.</small>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+

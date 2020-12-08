@@ -1,0 +1,359 @@
+﻿@page
+@model Killboard.Tools.DriftersModel
+@{
+    ViewData["Title"] = "Drifters";
+}
+<div id="spinner_container" class="spinner-border text-dark loading-overlay" role="status">
+    <span class="sr-only">Loading...</span>
+</div>
+<h4 class="text-light">Jove Observatory Systems</h4>
+<br />
+<div class="container table-responsive">
+    <div class="row d-flex justify-content-start align-items-center bg-secondary rounded pt-1 pb-1 ml-sm-0 mr-sm-0">
+        <div class="col-sm-3">
+            <div id="security_dropdown" class="dropdown">
+                <button class="btn btn-secondary btn-outline-dark text-white dropdown-toggle dropdown-sm-center" type="button" id="sec_drop_btn" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    Security Status
+                </button>
+                <div class="dropdown-menu" aria-labelledby="sec_drop_btn">
+                    @if (!string.IsNullOrEmpty(Model.Security))
+                    {
+                        if (Model.Security.Equals("All", StringComparison.CurrentCultureIgnoreCase))
+                        {
+                            <a class="dropdown-item sec-item active" data-sec="-1" href="#">All</a>
+                            <a class="dropdown-item sec-item text-primary" data-sec="1" href="#">High</a>
+                            <a class="dropdown-item sec-item text-warning" data-sec="0.5" href="#">Low</a>
+                            <a class="dropdown-item sec-item text-danger" data-sec="0" href="#">Null</a>
+                        }
+                        else if (Model.Security.Equals("High", StringComparison.CurrentCultureIgnoreCase))
+                        {
+                            <a class="dropdown-item sec-item" data-sec="-1" href="#">All</a>
+                            <a class="dropdown-item sec-item text-primary active" data-sec="1" href="#">High</a>
+                            <a class="dropdown-item sec-item text-warning" data-sec="0.5" href="#">Low</a>
+                            <a class="dropdown-item sec-item text-danger" data-sec="0" href="#">Null</a>
+                        }
+                        else if (Model.Security.Equals("Low", StringComparison.CurrentCultureIgnoreCase))
+                        {
+                            <a class="dropdown-item sec-item" data-sec="-1" href="#">All</a>
+                            <a class="dropdown-item sec-item text-primary" data-sec="1" href="#">High</a>
+                            <a class="dropdown-item sec-item text-warning active" data-sec="0.5" href="#">Low</a>
+                            <a class="dropdown-item sec-item text-danger" data-sec="0" href="#">Null</a>
+                        }
+                        else if (Model.Security.Equals("Null", StringComparison.CurrentCultureIgnoreCase))
+                        {
+                            <a class="dropdown-item sec-item" data-sec="-1" href="#">All</a>
+                            <a class="dropdown-item sec-item text-primary" data-sec="1" href="#">High</a>
+                            <a class="dropdown-item sec-item text-warning" data-sec="0.5" href="#">Low</a>
+                            <a class="dropdown-item sec-item text-danger active" data-sec="0" href="#">Null</a>
+                        }
+                    }
+                    else
+                    {
+                        <a class="dropdown-item sec-item" data-sec="-1" href="#">All</a>
+                        <a class="dropdown-item sec-item text-primary" data-sec="1" href="#">High</a>
+                        <a class="dropdown-item sec-item text-warning" data-sec="0.5" href="#">Low</a>
+                        <a class="dropdown-item sec-item text-danger" data-sec="0" href="#">Null</a>
+                    }
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-3 mt-sm-1-min">
+            <div id="region_dropdown" class="dropdown">
+                <button class="btn btn-secondary btn-outline-dark text-white dropdown-toggle dropdown-sm-center" type="button" id="region_drop_btn" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    Region
+                </button>
+                @if (!string.IsNullOrEmpty(Model.Region))
+                {
+                    <div id="region_menu" class="dropdown-menu" data-qsregion="@Model.Region" aria-labelledby="region_drop_btn"></div>
+                }
+                else
+                {
+                    <div id="region_menu" class="dropdown-menu" aria-labelledby="region_drop_btn"></div>
+                }
+            </div>
+        </div>
+        <div class="col-sm-6 row d-flex justify-content-between align-items-center pr-0">
+            <div id="search_drop_container" class="col-sm-3 pr-0 mt-sm-1-min">
+                <div id="range_dropdown" class="dropdown pr-0">
+                    <button class="btn btn-secondary btn-outline-dark text-white dropdown-toggle dropdown-sm-center" type="button" id="range_drop_btn" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        Range
+                    </button>
+                    <div class="dropdown-menu" aria-labelledby="range_drop_btn">
+                        <a data-jumps="5" class="dropdown-item range-item" href="#">5 Jumps</a>
+                        <a data-jumps="10" class="dropdown-item range-item" href="#">10 Jumps</a>
+                        <a data-jumps="15" class="dropdown-item range-item" href="#">15 Jumps</a>
+                        <a class="dropdown-item-text">
+                            <div class="input-group input-group-sm">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text" id="custom-input-lbl">Custom</span>
+                                </div>
+                                <input id="custom_range_input" type="number" min="1" max="100" oninput="this.value = !!this.value && Math.abs(this.value) > 0 && Math.abs(this.value) <= 100 ? Math.abs(this.value) : null" class="form-control" aria-label="Custom Range" aria-describedby="custom-input-lbl">
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div data-jumps="5" id="jump_lbl" class="col-sm-2 d-sm-flex-center pr-0 pl-md-0 text-white font-weight-bold mt-sm-1-min">
+                5 Jumps
+            </div>
+            <div id="search_input_container" class="col-sm-5 pl-md-0 pr-0 mt-sm-1-min">
+                <div class="input-group">
+                    <div class="input-group-prepend m-sm-l-1">
+                        <span class="input-group-text" id="from-system-lbl">From:</span>
+                    </div>
+                    <input id="search_input" type="text" placeholder="System Name" class="form-control m-sm-r-1" aria-label="From System" aria-describedby="from-system-lbl">
+                </div>
+            </div>
+            <div class="col-sm-1 d-sm-flex-center pl-md-0 pr-0">
+                <button id="reset_btn" class="btn btn-sm btn-danger btn-sm-expand float-md-right mt-sm-1-min">&times;</button>
+            </div>
+            <div class="col-sm-1 d-sm-flex-center pl-md-0 pr-0">
+                <button id="search_btn" class="btn btn-sm btn-primary btn-sm-expand float-md-right mt-sm-1-min" type="submit">Go</button>
+            </div>
+        </div>
+    </div>
+    <br />
+    @if (!string.IsNullOrEmpty(Model.Amount))
+    {
+        <table id="drifter_table" data-qsamount="@Model.Amount" class="display nowrap">
+            <thead>
+                <tr>
+                    <th data-priority="1" class="text-light bg-secondary">System</th>
+                    <th class="text-light bg-secondary">Security</th>
+                    <th class="text-light bg-secondary">Constellation</th>
+                    <th class="text-light bg-secondary">Region</th>
+                    <th hidden>SystemID</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    }
+    else
+    {
+        <table id="drifter_table" class="display nowrap">
+            <thead>
+                <tr>
+                    <th data-priority="1" class="text-light bg-secondary">System</th>
+                    <th class="text-light bg-secondary">Security</th>
+                    <th class="text-light bg-secondary">Constellation</th>
+                    <th class="text-light bg-secondary">Region</th>
+                    <th hidden>SystemID</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    }
+
+</div>
+
+@section Scripts {
+    <script>
+        var selectedSec = -1;
+        var systemsWithinRange = -1;
+        var allSystems = [];
+
+        // DataTables Custom Filters
+
+        $.fn.dataTable.ext.search.push(
+            function (settings, data, dataIndex) {
+                var followsSec = false;
+                var followsRange = false;
+
+                var min = -1;
+
+                if (selectedSec == -1) {
+                    followsSec = true;
+                } else {
+                    if (selectedSec == 0.5) { // Low
+                        min = 0;
+                    } else if (selectedSec == 0) { // Null
+                        min = -1;
+                    } else if (selectedSec == 1) { // High
+                        min = 0.5;
+                    }
+                    var sec = parseFloat(data[1].split(/(\s+)/)[2].replace("(", "").replace(")", "")); // use data for the security status column
+                    if ((isNaN(min) && isNaN(selectedSec)) ||
+                        (isNaN(min) && sec <= selectedSec) ||
+                        (min <= sec && isNaN(selectedSec)) ||
+                        (min <= sec && sec <= selectedSec)) {
+                        followsSec = true;
+                    }
+                }
+
+                if (systemsWithinRange == -1 || systemsWithinRange.includes(parseInt(data[4])))
+                    followsRange = true;
+
+                return followsSec && followsRange
+            });
+
+        $(document).ready(function () {
+            $('#spinner_container').show();
+
+            // DataTables
+
+            var drifterTable = $('#drifter_table').DataTable({
+                lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "All"]],
+                ajax: '/json/jovesystems.json',
+                responsive: true,
+                scrollY: '50vh',
+                scrollCollapse: true,
+                columns: [
+                    {
+                        data: 'name',
+                        className: 'all',
+                        render: function (data, type, row) {
+                            return data;
+                        }
+                    },
+                    {
+                        data: 'security_status',
+                        className: 'desktop',
+                        render: function (data, type, row) {
+                            if (data == -0.99) { // WH-Space
+                                return `<span class='text-secondary'>J-Space</span>&nbsp;(${data})`;
+                            } else if (data < 0.5 && data > 0.0) { // Low
+                                return `<span class='text-warning'>Low</span>&nbsp;(${data})`;
+                            } else if (data <= 0.0) { // Null
+                                return `<span class='text-danger'>Null</span>&nbsp;(${data})`;
+                            } else { // High
+                                return `<span class='text-primary'>High</span>&nbsp;(${data})`;
+                            }
+                        }
+                    },
+                    {
+                        data: 'constellation.name',
+                        className: 'desktop',
+                        render: function (data, type, row) {
+                            return data;
+                        }
+                    },
+                    {
+                        data: 'constellation.region.name',
+                        className: 'desktop',
+                        render: function (data, type, row) {
+                            return data;
+                        }
+                    },
+                    {
+                        data: 'system_id',
+                        className: 'never',
+                        render: function (data, type, row) {
+                            return data;
+                        }
+                    }
+                ],
+                columnDefs: [
+                    { responsivePriority: 1, targets: 0 },
+                ],
+                initComplete: function () {
+                    var column = this.api().column(3)
+                    var menu = $("#region_menu");
+                    menu.append($('<a class="dropdown-item region-item">All</a>').on("click", function (e) {
+                        e.preventDefault();
+                        column
+                            .search('', false, false)
+                            .draw();
+                    }));
+                    column.data().unique().sort().each(function (d, j) {
+                        var item = $('<a class="dropdown-item region-item">' + d + '</a>').on("click", function (e) {
+                            e.preventDefault();
+                            column
+                                .search(d ? '^' + d + '$' : '', true, false)
+                                .draw();
+                        });
+                        menu.append(item);
+                    });
+
+                    var qsRegion = $("#region_menu").data("qsregion");
+                    if (qsRegion && column.data(qsRegion).any()) {
+                        $("#region_menu").removeData("qsregion");
+                        column
+                            .search(qsRegion, false, false)
+                            .draw();
+                    }
+
+                    var qsSec = $(".sec-item.active");
+                    if (qsSec != null) {
+                        qsSec.removeClass("active");
+                        selectedSec = parseFloat(qsSec.data("sec"));
+                        this.api().draw();
+                    }
+
+                    var qsAmt = $("#drifter_table").data("qsamount");
+                    if (qsAmt) {
+                        if (qsAmt == "All" || qsAmt == "all") qsAmt = -1;
+                        else qsAmt = parseInt(qsAmt);
+                        this.api().page.len(qsAmt).draw();
+                    }
+                }
+            });
+
+            // Dropdown item events
+
+            $(".sec-item").on("click", function (e) {
+                e.preventDefault();
+                selectedSec = parseFloat($(this).data("sec"));
+                drifterTable.draw();
+            });
+
+            $(".range-item").on("click", function (e) {
+                e.preventDefault();
+                var val = $(this).data("jumps");
+                $("#jump_lbl").text(`${val} Jumps`).data("jumps", val);
+            });
+
+            $("#custom_range_input").on("keyup", function (e) {
+                e.preventDefault();
+                var val = $(this).val();
+                $("#jump_lbl").text(`${val} Jumps`).data("jumps", val);
+            });
+
+            // Search Events
+
+            $("#search_btn").on("click", function (e) {
+                var systemName = $("#search_input").val();
+                var jumps = $("#jump_lbl").data("jumps");
+                // Minimum System name length, server does actual name validation.
+                if (systemName.length > 2 && jumps > 0) {
+                    if ($("#search_input").hasClass("is-invalid"))
+                        $("#search_input").removeClass("is-invalid");
+
+                    if (!$("#search_input").hasClass("is-valid"))
+                        $("#search_input").addClass("is-valid");
+
+                    $.getJSON(`@Url.Page("Drifters", "RangeSearch")&systemName=${systemName}&jumps=${jumps}`, function (data) {
+                        systemsWithinRange = data;
+                        drifterTable.draw();
+                    }).fail(function (xhr, textStatus) {
+                        $("#search_input").addClass("is-invalid");
+                    });
+                }
+            });
+
+            $("#search_input").autocomplete({
+                source: '@Url.Page("Drifters", "search")'
+            });
+
+            $("#reset_btn").on("click", function (e) {
+                // No need to reset if there is no range filter in effect.
+                if (systemsWithinRange.length == 0) return;
+
+                if ($("#search_input").hasClass("is-invalid"))
+                    $("#search_input").removeClass("is-invalid");
+
+                if ($("#search_input").hasClass("is-valid"))
+                    $("#search_input").removeClass("is-valid");
+
+                if ($("#search_input").val().length > 0)
+                    $("#search_input").val("");
+
+                systemsWithinRange = -1;
+                drifterTable.draw();
+            });
+
+            $('#spinner_container').fadeOut();
+        });
+    </script>
+}

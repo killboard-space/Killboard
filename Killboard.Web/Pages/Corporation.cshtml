@@ -1,0 +1,36 @@
+﻿@page "{corporationId:int}"
+@model Killboard.Web.Pages.CorporationModel
+@using Domain.Enums;
+@{
+    ViewData["Title"] = "Corporation";
+    if (User.Identity.IsAuthenticated)
+    {
+        Layout = "~/Pages/Shared/_LayoutUser.cshtml";
+    }
+}
+
+<div class="row">
+    <div class="col-sm-2">
+        <img class="img-thumbnail" src="https://images.evetech.net/corporations/@Model.CorporationID/logo?size=128" />
+    </div>
+    <div class="col-md-10">
+        <div class="row pb-0 pt-0">
+            <div class="col-md">
+                <h5 class="text-light">@Model.CorporationDetail.Name <span class="text-secondary">[@Model.CorporationDetail.Ticker]</span></h5>
+            </div>
+        </div>
+        <hr class="bg-light" />
+        @if (Model.CorporationDetail.AllianceID.HasValue)
+        {
+            <div class="row col-md pb-0 pt-0">
+                <small>
+                    <b class="text-light">Alliance:</b>
+                    <a class="text-light" href="/alliance/@Model.CorporationDetail.AllianceID.Value">@Model.CorporationDetail.AllianceName</a>
+                </small>
+            </div>
+            <hr class="bg-light" />
+        }
+    </div>
+</div>
+<br />
+<component type="typeof(Killboard.Web.Components.KillmailList)" render-mode="ServerPrerendered" param-ListType="@ListTypes.CORPORATION" param-CorporationID="@Model.CorporationID" />

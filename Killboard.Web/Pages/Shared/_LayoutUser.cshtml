@@ -1,0 +1,40 @@
+﻿@{ 
+    ViewData["user_name"] = User.Claims.Where(a => a.Type == "username").Select(a => a.Value).FirstOrDefault();
+    ViewData["user_id"] = User.Claims.Where(a => a.Type == "user_id").Select(a => a.Value).FirstOrDefault();
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - killboard.space</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" />
+    <link rel="stylesheet" href="~/font-awesome/css/all.min.css" />
+    <base href="~/" />
+</head>
+<body class="bg-dark">
+    <div id="components-reconnect-modal"></div>
+    <header>
+        <component type="typeof(Killboard.Web.Components.NavBar)" render-mode="ServerPrerendered" param-UserID="@ViewData["user_id"]" param-Username="@ViewData["user_name"]" />
+    </header>
+    <div class="container">
+        <main role="main" class="pb-3">
+            @RenderBody()
+        </main>
+    </div>
+
+    <footer class="border-top footer text-muted">
+        <div class="container text-light">
+            &copy; 2020 - killboard.space - <a asp-area="" asp-page="/Privacy">Privacy</a>
+        </div>
+    </footer>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="_framework/blazor.server.js"></script>
+    <script src="~/font-awesome/js/all.min.js"></script>
+    @RenderSection("Scripts", required: false)
+</body>
+</html>

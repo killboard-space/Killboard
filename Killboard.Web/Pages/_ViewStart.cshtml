@@ -1,0 +1,10 @@
+﻿@{
+    if (User.Identity.IsAuthenticated)
+    {
+        Layout = "_LayoutUser";
+    }
+    else
+    {
+        Layout = "_Layout";
+    }
+}

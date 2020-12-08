@@ -1,0 +1,133 @@
+﻿@using Domain.DTO.Character;
+@using Domain.Interfaces
+@inject IAPIService apiService;
+
+@if (character != null)
+{
+    <div class="modal fade" tabindex="-1" role="dialog" aria-labelledby="cinfo_title" aria-hidden="true" data-character="@CharacterID">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="cinfo_title">
+                    @if (!string.IsNullOrEmpty(character.Username))
+                    {
+                        <a href="/character/@character.CharacterID">
+                            @character.Username
+                        </a>
+                    }
+                    </h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="row mb-2">
+                        <div class="d-flex w-100 justify-content-between">
+                            <div class="col-sm-3"><b>Alliance</b></div>
+                            <div class="col-sm-6">
+                                @if (character.AllianceID.HasValue)
+                                {
+                                <a href="/alliance/@character.AllianceID">@character.AllianceName</a>
+                                }
+                                else
+                                {
+                                    @:None
+                                }
+                            </div>
+                            <div class="col-sm-3">
+                                @if (character.AllianceID.HasValue)
+                                {
+                                    <img class="img-thumbnail" src="https://images.evetech.net/alliances/@character.AllianceID/logo?size=64" />
+                                }
+                                else
+                                {
+                                    <img class="img-thumbnail" width="64" height="64" src="~/img/null.png" />
+                                }
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="d-flex w-100 justify-content-between">
+                            <div class="col-sm-3"><b>Corporation</b></div>
+                            <div class="col-sm-6">
+                                <a href="/corporation/@character.CorporationID">@character.CorporationName</a>
+                            </div>
+                            <div class="col-sm-3">
+                                @if (character.CorporationID != default)
+                                {
+                                    <img class="img-thumbnail" src="https://images.evetech.net/corporations/@character.CorporationID/logo?size=64" />
+                                }
+                                else
+                                {
+                                    <img class="img-thumbnail" width="64" height="64" src="~/img/null.png" />
+                                }
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="d-flex w-100 justify-content-between">
+                            <div class="col-sm-3"><b>Security Status</b></div>
+                            <div class="col-sm-9">
+                                @if (character.SecurityStatus > 0.5)
+                                {
+                                    <span class="text-primary">@character.SecurityStatus</span>
+                                }
+                                else if (character.SecurityStatus > 0)
+                                {
+                                    <span class="text-warning">@character.SecurityStatus</span>
+                                }
+                                else
+                                {
+                                    <span class="text-danger">@character.SecurityStatus</span>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="d-flex w-100 justify-content-between">
+                            <div class="col-sm-3"><b>Birthday</b></div>
+                            <div class="col-sm-9">
+                                @if (character.Birthday.HasValue)
+                                {
+                                    @character.Birthday.Value.ToShortDateString();
+                                }
+                                else
+                                {
+                                    @:oops
+                                }
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="d-flex w-100 justify-content-between">
+                            <div class="col-sm-3"><b>Gender</b></div>
+                            <div class="col-sm-9">
+                                @character.Gender
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                @*<div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-primary">Save changes</button>
+                    </div>*@
+            </div>
+        </div>
+    </div>
+}
+
+
+@code {
+    [Parameter]
+    public int CharacterID { get; set; }
+
+    public GetCharacterDetail character { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        character = await apiService.GetCharacterDetail(CharacterID);
+
+        if (character != null) Console.WriteLine($"Linked Character {character.Username} to Modal");
+    }
+
+}

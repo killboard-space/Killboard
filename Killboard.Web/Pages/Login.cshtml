@@ -1,0 +1,81 @@
+﻿@page
+@model Killboard.Web.LoginModel
+@{
+    ViewData["Title"] = "Login";
+    if (!string.IsNullOrEmpty(Model.Message))
+    {
+        <div class="m-container">
+            <br />
+            <div class="card bg-success">
+                <div class="card-header text-light">
+                    <div class="row">
+                        <div class=" d-flex w-100 justify-content-between">
+                            <div class="col-sm-11">
+                                @Model.Message
+                            </div>
+                            <div class="col-sm">
+                                <span class="dismiss-icon float-right" data-effect="fadeOut"><i class="fa fa-times"></i></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <br />
+        </div>
+    }
+
+    if (!string.IsNullOrEmpty(Model.ErrorMessage))
+    {
+        <div class="m-container">
+            <br />
+            <div class="card bg-danger">
+                <div class="card-header text-light">
+                    <div class="row">
+                        <div class=" d-flex w-100 justify-content-between">
+                            <div class="col-sm-11">
+                                @Model.ErrorMessage
+                            </div>
+                            <div class="col-sm">
+                                <span class="dismiss-icon float-right" data-effect="fadeOut"><i class="fa fa-times"></i></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <br />
+        </div>
+    }
+}
+<div class="card">
+    <div class="card-header">
+        <div><b>Login is disabled!</b></div>
+        <small>Site login has been disabled until site is finished.</small>
+    </div>
+</div>
+<br />
+<div class="card">
+    <div class="card-body">
+        <form class="form-horizontal" method="post">
+            <div class="form-group">
+                <label asp-for="Username" class="col-sm-2 control-label">Username</label>
+                <div class="col-sm-10">
+                    <input type="text" class="form-control" asp-for="Username" name="Username">
+                </div>
+            </div>
+            <div class="form-group">
+                <label asp-for="Password" class="col-sm-2 control-label">Password</label>
+                <div class="col-sm-10">
+                    <input type="password" class="form-control" asp-for="Password" name="Password">
+                </div>
+            </div>
+            <hr />
+            <div class="form-group">
+                <div class="col-sm-offset-2 col-sm-10">
+                    <button type="submit" class="btn btn-primary" disabled>Login</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+<small><a asp-area="" asp-page="Forget">Forgot your password?</a></small>
+

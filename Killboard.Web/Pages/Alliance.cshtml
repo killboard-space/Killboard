@@ -1,0 +1,27 @@
+﻿@page "{allianceId:int}"
+@model Killboard.Web.Pages.AllianceModel
+@using Domain.Enums;
+@{
+    ViewData["Title"] = "Alliance";
+    if (User.Identity.IsAuthenticated)
+    {
+        Layout = "~/Pages/Shared/_LayoutUser.cshtml";
+    }
+}
+
+<div class="row">
+    <div class="col-sm-2">
+        <img class="img-thumbnail" src="https://images.evetech.net/alliances/@Model.AllianceID/logo?size=128"/>
+    </div>
+    <div class="col-md-10">
+        <div class="row pb-0 pt-0">
+            <div class="col-md">
+                <h5 class="text-light">@Model.AllianceDetail.Name <span class="text-secondary">[@Model.AllianceDetail.Ticker]</span></h5>
+            </div>
+        </div>
+        <hr class="bg-light" />
+    </div>
+</div>
+<br />
+<component type="typeof(Killboard.Web.Components.KillmailList)" render-mode="ServerPrerendered" param-ListType="@ListTypes.ALLIANCE" param-AllianceID="@Model.AllianceID" />
+

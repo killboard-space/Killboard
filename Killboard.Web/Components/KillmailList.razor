@@ -1,0 +1,138 @@
+﻿@using Domain.DTO.Killmail;
+@using Domain.Enums; 
+@using Microsoft.AspNetCore.SignalR.Client;
+@inject Microsoft.Extensions.Configuration.IConfiguration Config;
+<div class="container-fluid">
+    <table class="table-responsive">
+        <thead>
+            <tr>
+                <th>Time</th>
+                <th>Location</th>
+                <th>Ship</th>
+                <th>Victim</th>
+                <th>Attackers</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Killmails == null)
+            {
+                <tr>
+                    Loading...
+                </tr>
+            }
+            else
+            {
+                @foreach (var km in Killmails.OrderBy(k => k.KillmailTime))
+                {
+                    <tr>
+                        <td>@km.KillmailTime.ToString("MM/DD/YYYY hh:mm:ss")</td>
+                        <td>
+                            <div class="row col-md">
+                                <a href="/system/@km.SystemID">@km.SystemName</a>
+                            </div>
+                            <div class="row col-md">
+                                <a href="/region/@km.RegionID">@km.RegionName</a>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="row col-md">
+                                <img class="img-thumbnail" src="https://images.evetech.net/types/@km.ShipID/render?size=64" />
+                            </div>
+                            <div class="row col-md">
+                                <a href="/ship/@km.ShipID">@km.ShipName</a>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="row col-md">
+                                <a href="/system/@km.SystemID">@km.SystemName</a>
+                            </div>
+                            <div class="row col-md">
+                                <a href="/character/@km.VictimCharacterID">@km.VictimName</a>
+                            </div>
+                        </td>
+                        <td>
+                            <span>@km.AttackerCount</span>
+                        </td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+</div>
+
+@code {
+    [Parameter]
+    public ListTypes ListType { get; set; }
+
+    [Parameter]
+    public int? CharacterID { get; set; }
+
+    [Parameter]
+    public int? CorporationID { get; set; }
+
+    [Parameter]
+    public int? AllianceID { get; set; }
+
+    public static List<ListDetail> Killmails { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var hubUrl = Config["API_URL"].Replace("api", "killmails");
+
+        var hubConnection = new HubConnectionBuilder().WithUrl(hubUrl).Build();
+
+        var filter = CharacterID ?? (CorporationID ?? AllianceID);
+
+        hubConnection.On<ListDetail>("NewKillmail", km =>
+        {
+            switch (ListType)
+            {
+                case ListTypes.CHARACTER:
+                    if(km.VictimCharacterID == filter)
+                        Killmails.Add(km);
+                    break;
+                case ListTypes.CORPORATION:
+                    if(km.VictimCorporationID == filter)
+                        Killmails.Add(km);
+                    break;
+                case ListTypes.ALLIANCE:
+                    if(km.VictimAllianceID == filter)
+                        Killmails.Add(km);
+                    break;
+                case ListTypes.SHIP:
+                    if(km.ShipID == filter)
+                        Killmails.Add(km);
+                    break;
+                case ListTypes.GROUP:
+                    // TODO: Fix
+                    break;
+                case ListTypes.SYSTEM:
+                    if(km.SystemID == filter)
+                        Killmails.Add(km);
+                    break;
+                case ListTypes.CONSTELLATION:
+                    // TODO: Fix
+                    break;
+                case ListTypes.REGION:
+                    if(km.RegionID == filter)
+                        Killmails.Add(km);
+                    break;
+                case ListTypes.ALL:
+                    Killmails.Add(km);
+                    break;
+                case ListTypes.EXACT:
+                    if(km.KillmailID == filter)
+                        Killmails.Add(km);
+                    break;
+                default:
+                    Killmails.Add(km);
+                    break;
+            }
+
+            StateHasChanged();
+        });
+
+        await hubConnection.StartAsync();
+        Killmails = await hubConnection.InvokeAsync<List<ListDetail>>("GetAllKillmails", ListType, filter);
+    }
+}

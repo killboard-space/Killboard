@@ -1,0 +1,139 @@
+﻿@page
+@model Killboard.Web.Pages.AccountsModel
+@{
+    ViewData["Title"] = "Accounts";
+    Layout = "~/Pages/Shared/_LayoutUser.cshtml";
+
+    if (!string.IsNullOrEmpty(Model.Message))
+    {
+        <div class="m-container">
+            <br />
+            <div class="card bg-success">
+                <div class="card-header text-light">
+                    <div class="row">
+                        <div class=" d-flex w-100 justify-content-between">
+                            <div class="col-sm-11">
+                                @Model.Message
+                            </div>
+                            <div class="col-sm">
+                                <span class="dismiss-icon float-right" data-effect="fadeOut"><i class="fa fa-times"></i></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <br />
+        </div>
+    }
+
+    if (!string.IsNullOrEmpty(Model.ErrorMessage))
+    {
+        <div class="m-container">
+            <br />
+            <div class="card bg-danger">
+                <div class="card-header text-light">
+                    <div class="row">
+                        <div class=" d-flex w-100 justify-content-between">
+                            <div class="col-sm-11">
+                                @Model.ErrorMessage
+                            </div>
+                            <div class="col-sm">
+                                <span class="dismiss-icon float-right" data-effect="fadeOut"><i class="fa fa-times"></i></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <br />
+        </div>
+    }
+}
+<div id="cinfo"></div>
+<h3 class="text-light">Accounts</h3>
+<br />
+<div class="card">
+    <div class="card-header">
+        <div class="d-flex w-100 justify-content-between">
+            <div class="mb-auto mt-auto">
+                Authorized Characters
+            </div>
+            <div class="">
+                <a class="btn btn-primary" href="@ViewData["LoginURL"]" role="button">Add New</a>
+            </div>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="list-group">
+            @if (Model.Characters.Count > 0)
+            {
+                foreach (var character in Model.Characters)
+                {
+                    <component type="typeof(Killboard.Web.Components.CharacterInfo)" render-mode="ServerPrerendered" param-CharacterID="@character.CharacterID" />
+
+                    <a href="javascript:;" class="acct-info-btn list-group-item list-group-item-action flex-column" data-character="@character.CharacterID">
+                        <div class="row">
+                            <div class="d-flex w-100 justify-content-between">
+                                <img class="img-thumbnail" src="https://images.evetech.net/characters/@character.CharacterID/portrait?size=64" />
+                                <div class="">
+                                    <h5>@character.Username</h5>
+                                    <hr />
+                                </div>
+                                <img class="img-thumbnail" src="https://images.evetech.net/corporations/@character.CorporationID/logo?size=64" />
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="d-flex w-100 justify-content-between">
+                                <div class="special text-light">
+                                    Good Job!
+                                </div>
+                                <div class="special-tb bg-secondary text-light p-2">
+                                    @if (!string.IsNullOrEmpty(character.Description))
+                                    {
+                                        @Html.Raw(character.Description);
+                                    }
+                                    else
+                                    {
+                                        @:No description provided.
+                                    }
+                                </div>
+                                @if (character.AllianceID.HasValue)
+                                {
+                                    <img class="img-thumbnail" src="https://images.evetech.net/alliances/@character.AllianceID/logo?size=64" />
+                                }
+                                else
+                                {
+                                    <img class="img-thumbnail" width="64" height="64" src="~/img/null.png" />
+                                }
+                            </div>
+                        </div>
+                        <div class="row">
+                            <small><b>CharacterID</b>: @character.CharacterID</small>
+                            <small>&nbsp;<b>Security</b>: @character.SecurityStatus</small>
+                        </div>
+                    </a>
+                    <hr />
+                }
+            }
+            else
+            {
+                <a href="#" class="list-group-item list-group-item-action flex-column">
+                    <div class="d-flex w-100 text-center">
+                        None
+                    </div>
+                </a>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            $(".acct-info-btn").click(function () {
+                var id = $(this).data("character");
+                var modal = $(`.modal[data-character='${id}'`);
+                modal.modal('show')
+            });
+        });
+    </script>
+}

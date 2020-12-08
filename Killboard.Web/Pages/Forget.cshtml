@@ -1,0 +1,97 @@
+﻿@page
+@model Killboard.Web.Pages.ForgetModel
+@{
+    ViewData["Title"] = "Forget";
+    Layout = "~/Pages/Shared/_Layout.cshtml";
+
+    if (!string.IsNullOrEmpty(Model.Message))
+    {
+        <div class="m-container">
+            <br />
+            <div class="card bg-success">
+                <div class="card-header text-light">
+                    <div class="row">
+                        <div class=" d-flex w-100 justify-content-between">
+                            <div class="col-sm-11">
+                                @Model.Message
+                            </div>
+                            <div class="col-sm">
+                                <span class="dismiss-icon float-right" data-effect="fadeOut"><i class="fa fa-times"></i></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <br />
+        </div>
+    }
+
+    if (!string.IsNullOrEmpty(Model.ErrorMessage))
+    {
+        <div class="m-container">
+            <br />
+            <div class="card bg-danger">
+                <div class="card-header text-light">
+                    <div class="row">
+                        <div class=" d-flex w-100 justify-content-between">
+                            <div class="col-sm-11">
+                                @Model.ErrorMessage
+                            </div>
+                            <div class="col-sm">
+                                <span class="dismiss-icon float-right" data-effect="fadeOut"><i class="fa fa-times"></i></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <br />
+        </div>
+    }
+}
+
+<h3>Forgot Password</h3>
+<br />
+@if (Model.IsWithValidKey)
+{
+    <div class="card">
+        <div class="card-header">
+            Enter a new Password
+        </div>
+        <div class="card-body">
+            <form class="form-horizontal" method="post">
+                <div class="form-group">
+                    <label asp-for="Password" class="col-sm-2 control-label">New Password</label>
+                    <div class="col-sm-10">
+                        <input type="text" class="form-control" asp-for="Password" name="Password" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label asp-for="ConfirmPassword" class="col-sm-2 control-label">Confirm Password</label>
+                    <div class="col-sm-10">
+                        <input type="text" class="form-control" asp-for="ConfirmPassword" name="ConfirmPassword" required>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+}
+else
+{
+    <div class="card">
+        <div class="card-header">
+            Reset your password
+        </div>
+        <div class="card-body">
+            <form class="form-horizontal" method="post">
+                <div class="form-group">
+                    <label asp-for="Email" class="col-sm-2 control-label">Email</label>
+                    <div class="col-sm-10">
+                        <input type="text" class="form-control" asp-for="Email" name="Email" required>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+}
+
+

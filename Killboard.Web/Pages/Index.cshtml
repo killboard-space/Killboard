@@ -1,0 +1,14 @@
+﻿@page
+@model IndexModel
+@using Domain.Enums;
+@{
+    ViewData["Title"] = "Home";
+    if (User.Identity.IsAuthenticated)
+    {
+        Layout = "~/Pages/Shared/_LayoutUser.cshtml";
+    }
+}
+
+<h3 class="text-light">Recent Kills</h3>
+<br />
+<component type="typeof(Killboard.Web.Components.KillmailList)" render-mode="ServerPrerendered" param-ListType="@ListTypes.ALL" />

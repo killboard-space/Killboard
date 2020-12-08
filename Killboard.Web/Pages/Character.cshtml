@@ -1,0 +1,73 @@
+﻿@page "{characterId:int}"
+@model Killboard.Web.Pages.CharacterModel
+@using Domain.Enums;
+@{
+    ViewData["Title"] = Model.CharacterDetail.Username;
+    if (User.Identity.IsAuthenticated)
+    {
+        Layout = "~/Pages/Shared/_LayoutUser.cshtml";
+    }
+}
+
+<div class="row">
+    <div class="col-sm-2">
+        <img class="img-thumbnail" src="https://images.evetech.net/characters/@Model.CharacterDetail.CharacterID/portrait?size=128" />
+    </div>
+    <div class="col-sm-6">
+        <div class="row d-flex justify-content-between pt-0 pb-0">
+            <div class="col-sm-11">
+                <h5 class="text-light">@Model.CharacterDetail.Username <span class="text-secondary">[@Model.CharacterDetail.CorporationTicker]</span></h5>
+            </div>
+            <div class="col-sm-1 pl-0">
+                @if (Model.CharacterDetail.SecurityStatus >= 0.5)
+                {
+                    <div class="text-primary">@Model.CharacterDetail.SecurityStatus.ToString("F2")</div>
+                }
+                else if (Model.CharacterDetail.SecurityStatus > 0.0)
+                {
+                    <div class="text-warning">@Model.CharacterDetail.SecurityStatus.ToString("F2")</div>
+                }
+                else
+                {
+                    <div class="text-danger">@Model.CharacterDetail.SecurityStatus.ToString("F2")</div>
+                }
+            </div>
+        </div>
+        <hr class="bg-light" />
+        @if (Model.CharacterDetail.AllianceID.HasValue)
+        {
+            <div class="row col-md pt-0 pb-0">
+                <small>
+                    <b class="text-light">Alliance:</b>
+                    <a class="text-light" href="/alliance/@Model.CharacterDetail.AllianceID.Value">@Model.CharacterDetail.AllianceName</a>
+                </small>
+            </div>
+            <hr class="bg-light" />
+        }
+        <div class="row col-md pt-0 pb-0">
+            <small>
+                <b class="text-light">Corporation:</b>
+                <a class="text-light" href="/corporation/@Model.CharacterDetail.CorporationID">@Model.CharacterDetail.CorporationName</a>
+            </small>
+        </div>
+    </div>
+    @if (Model.CharacterDetail.AllianceID.HasValue)
+    {
+        <div class="col-sm-2 d-flex justify-content-end">
+            <img class="img-thumbnail" src="https://images.evetech.net/alliances/@Model.CharacterDetail.AllianceID.Value/logo?size=128" />
+        </div>
+        <div class="col-sm-2 d-flex justify-content-end">
+            <img class="img-thumbnail" src="https://images.evetech.net/corporations/@Model.CharacterDetail.CorporationID/logo?size=128" />
+        </div>
+    }
+    else
+    {
+        <div class="col-sm-4 d-flex justify-content-end">
+            <img class="img-thumbnail" src="https://images.evetech.net/corporations/@Model.CharacterDetail.CorporationID/logo?size=128" />
+        </div>
+    }
+</div>
+<hr class="bg-light" />
+<br />
+<component type="typeof(Killboard.Web.Components.KillmailList)" render-mode="ServerPrerendered" param-ListType="@ListTypes.CHARACTER" param-CharacterID="@Model.CharacterID" />
+

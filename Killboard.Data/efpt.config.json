@@ -1,0 +1,155 @@
+﻿{
+   "ContextClassName": "KillboardContext",
+   "ContextNamespace": null,
+   "DefaultDacpacSchema": null,
+   "DoNotCombineNamespace": false,
+   "IdReplace": false,
+   "IncludeConnectionString": false,
+   "ModelNamespace": null,
+   "OutputContextPath": null,
+   "OutputPath": "Models",
+   "ProjectRootNamespace": "Killboard.Data",
+   "SelectedHandlebarsLanguage": 0,
+   "SelectedToBeGenerated": 0,
+   "Tables": [
+      {
+         "HasPrimaryKey": true,
+         "Name": "[dbo].[access_tokens]"
+      },
+      {
+         "HasPrimaryKey": true,
+         "Name": "[dbo].[alliances]"
+      },
+      {
+         "HasPrimaryKey": true,
+         "Name": "[dbo].[ancestries]"
+      },
+      {
+         "HasPrimaryKey": true,
+         "Name": "[dbo].[asteroid_belts]"
+      },
+      {
+         "HasPrimaryKey": true,
+         "Name": "[dbo].[attackers]"
+      },
+      {
+         "HasPrimaryKey": true,
+         "Name": "[dbo].[bloodlines]"
+      },
+      {
+         "HasPrimaryKey": true,
+         "Name": "[dbo].[categories]"
+      },
+      {
+         "HasPrimaryKey": true,
+         "Name": "[dbo].[character_scopes]"
+      },
+      {
+         "HasPrimaryKey": true,
+         "Name": "[dbo].[characters]"
+      },
+      {
+         "HasPrimaryKey": true,
+         "Name": "[dbo].[constellations]"
+      },
+      {
+         "HasPrimaryKey": true,
+         "Name": "[dbo].[corporations]"
+      },
+      {
+         "HasPrimaryKey": true,
+         "Name": "[dbo].[dogma_attributes]"
+      },
+      {
+         "HasPrimaryKey": true,
+         "Name": "[dbo].[dogma_effects]"
+      },
+      {
+         "HasPrimaryKey": true,
+         "Name": "[dbo].[dogma_modifiers]"
+      },
+      {
+         "HasPrimaryKey": true,
+         "Name": "[dbo].[dropped_items]"
+      },
+      {
+         "HasPrimaryKey": true,
+         "Name": "[dbo].[factions]"
+      },
+      {
+         "HasPrimaryKey": true,
+         "Name": "[dbo].[flags]"
+      },
+      {
+         "HasPrimaryKey": true,
+         "Name": "[dbo].[groups]"
+      },
+      {
+         "HasPrimaryKey": true,
+         "Name": "[dbo].[items]"
+      },
+      {
+         "HasPrimaryKey": true,
+         "Name": "[dbo].[killmails]"
+      },
+      {
+         "HasPrimaryKey": true,
+         "Name": "[dbo].[moons]"
+      },
+      {
+         "HasPrimaryKey": true,
+         "Name": "[dbo].[planets]"
+      },
+      {
+         "HasPrimaryKey": true,
+         "Name": "[dbo].[positions]"
+      },
+      {
+         "HasPrimaryKey": true,
+         "Name": "[dbo].[races]"
+      },
+      {
+         "HasPrimaryKey": true,
+         "Name": "[dbo].[regions]"
+      },
+      {
+         "HasPrimaryKey": true,
+         "Name": "[dbo].[reset_requests]"
+      },
+      {
+         "HasPrimaryKey": true,
+         "Name": "[dbo].[scopes]"
+      },
+      {
+         "HasPrimaryKey": true,
+         "Name": "[dbo].[stargates]"
+      },
+      {
+         "HasPrimaryKey": true,
+         "Name": "[dbo].[stars]"
+      },
+      {
+         "HasPrimaryKey": true,
+         "Name": "[dbo].[stations]"
+      },
+      {
+         "HasPrimaryKey": true,
+         "Name": "[dbo].[systems]"
+      },
+      {
+         "HasPrimaryKey": true,
+         "Name": "[dbo].[users]"
+      },
+      {
+         "HasPrimaryKey": true,
+         "Name": "[dbo].[victims]"
+      }
+   ],
+   "UseDatabaseNames": true,
+   "UseDbContextSplitting": false,
+   "UseFluentApiOnly": true,
+   "UseHandleBars": false,
+   "UseInflector": false,
+   "UseLegacyPluralizer": false,
+   "UseSpatial": false
+}
