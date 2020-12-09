@@ -9,8 +9,8 @@ namespace Killboard.Domain.Interfaces
     public interface ICharacterRepository
     {
         IEnumerable<GetCharacter> GetCharacters();
-        GetCharacter GetCharacter(int id);
-        GetCharacterDetail GetCharacterDetail(int id);
+        GetCharacter GetCharacter(long id);
+        GetCharacterDetail GetCharacterDetail(long id);
         Task<GetCharacter> AddSSOCharacter(PostSSOCharacter character);
     }
 }

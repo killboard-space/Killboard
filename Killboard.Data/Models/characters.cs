@@ -23,7 +23,7 @@ namespace Killboard.Data.Models
         public int race_id { get; set; }
         public DateTime birthday { get; set; }
         public int ancestry_id { get; set; }
-        public int character_id { get; set; }
+        public long character_id { get; set; }
         public int? alliance_id { get; set; }
 
         public virtual alliances alliance_ { get; set; }

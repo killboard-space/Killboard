@@ -53,7 +53,8 @@ namespace Killboard.Service
                     services.AddSingleton<KillboardQueue>();
                     services.AddSingleton<RefreshTokenQueue>();
                     services.AddSingleton<VictimQueue>();
-                    services.AddSingleton<KillmailTableSubscription>();
+
+                    services.AddHostedService<KillmailTableSubscription>();
                     services.AddHostedService<KillmailWorker>();
                 });
     }

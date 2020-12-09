@@ -20,7 +20,7 @@ namespace Killboard.Domain.Repositories
             _esiService = esiService;
         }
 
-        public GetCharacter GetCharacter(int id) => _ctx.characters.Where(u => u.character_id == id).Select(u => new GetCharacter
+        public GetCharacter GetCharacter(long id) => _ctx.characters.Where(u => u.character_id == id).Select(u => new GetCharacter
         {
             Description = u.description,
             AllianceID = u.alliance_id,
@@ -30,7 +30,7 @@ namespace Killboard.Domain.Repositories
             Username = u.name
         }).FirstOrDefault();
 
-        public GetCharacterDetail GetCharacterDetail(int id) => (from c in _ctx.characters
+        public GetCharacterDetail GetCharacterDetail(long id) => (from c in _ctx.characters
                                                                  where c.character_id == id
                                                                  join cp in _ctx.corporations on c.corporation_id equals cp.corporation_id
                                                                  join a in _ctx.alliances on c.alliance_id equals a.alliance_id into all
@@ -147,7 +147,6 @@ namespace Killboard.Domain.Repositories
                 }
             }
 
-            
             return null;
         }
     }

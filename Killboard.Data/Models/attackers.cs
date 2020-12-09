@@ -4,7 +4,10 @@ namespace Killboard.Data.Models
 {
     public partial class attackers
     {
-        public int char_id { get; set; }
+        public int attacker_id { get; set; }
+        public long? char_id { get; set; }
+        public int? corporation_id { get; set; }
+        public int? alliance_id { get; set; }
         public int damage_done { get; set; }
         public bool final_blow { get; set; }
         public int ship_type_id { get; set; }

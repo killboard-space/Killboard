@@ -280,7 +280,7 @@ namespace Killboard.Domain.Services
             return null;
         }
 
-        public async Task<GetCharacterDetail> GetCharacterDetail(int characterId)
+        public async Task<GetCharacterDetail> GetCharacterDetail(long characterId)
         {
             var response = await _client.GetAsync($"{BASE_URL}/Character/{characterId}/detail");
 

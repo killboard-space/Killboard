@@ -91,7 +91,7 @@
                 </div>
                 <div class="form-group">
                     <div class="col-sm-offset-2 col-sm-10">
-                        <button type="submit" class="btn btn-primary" disabled>@Html.Raw(Model.SSO_SIGNUP ? "Register & Associate" : "Register")</button>
+                        <button type="submit" class="btn btn-primary">@Html.Raw(Model.SSO_SIGNUP ? "Register & Associate" : "Register")</button>
                     </div>
                 </div>
             </form>
@@ -111,7 +111,7 @@
         <div id="eve_card_body" class="collapse">
             <div class="card-body">
                 <div class="row col-md">
-                    <a @*target="_self" onclick="window.open('@ViewData["LoginURL"]')"*@ href="#" @*href="@ViewData["LoginUrl"]"*@><img src="https://web.ccpgamescdn.com/eveonlineassets/developers/eve-sso-login-black-large.png" /></a>
+                    <a target="_self" onclick="window.open('@ViewData["LoginURL"]')" href="#" href="@ViewData["LoginUrl"]"><img src="https://web.ccpgamescdn.com/eveonlineassets/developers/eve-sso-login-black-large.png" /></a>
                     <small>&nbsp;<b>Note:</b> This will set your main character to this account.</small>
                 </div>
             </div>

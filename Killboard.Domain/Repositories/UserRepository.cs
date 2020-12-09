@@ -118,7 +118,7 @@ namespace Killboard.Domain.Repositories
             Username = c.name
         }).ToList();
 
-        public Dictionary<int, string> GetCharactersList(int id) => _ctx.characters.Where(c => c.user_id == id).ToDictionary(c => c.character_id, c => c.name);
+        public Dictionary<long, string> GetCharactersList(int id) => _ctx.characters.Where(c => c.user_id == id).ToDictionary(c => c.character_id, c => c.name);
 
         public async Task AddResetRequest(ForgetUser user)
         {

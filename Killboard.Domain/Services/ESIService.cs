@@ -21,7 +21,7 @@ namespace Killboard.Domain.Services
             };
         }
 
-        public async Task<PublicDataModel> GetPublicData(int charID)
+        public async Task<PublicDataModel> GetPublicData(long charID)
         {
             var task = await _client.GetAsync(ESI_URL + "characters/" + charID + "/");
             var result = await task.Content.ReadAsStringAsync();

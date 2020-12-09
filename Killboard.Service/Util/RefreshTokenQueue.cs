@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -15,10 +15,11 @@ namespace Killboard.Service.Util
     {
         private bool _delegateQueuedOrRunning;
 
-        private readonly Queue<(int charId, string refreshToken)> _objs = new Queue<(int charId, string refreshToken)>();
+        private readonly ConcurrentQueue<(long charId, string refreshToken)> _objs = new ConcurrentQueue<(long charId, string refreshToken)>();
 
         private readonly ILogger<RefreshTokenQueue> _logger;
         private readonly IUserService _userService;
+        private readonly DbContextOptions<KillboardContext> _dbContextOptions;
 
         private readonly string _esiClientId;
         private readonly string _esiSecretKey;
@@ -29,10 +30,12 @@ namespace Killboard.Service.Util
             _esiSecretKey = configuration["Killboard:EsiSecretKey"];
 
             _logger = logger;
+            _dbContextOptions = new DbContextOptionsBuilder<KillboardContext>()
+                .UseSqlServer(configuration["Killboard:Sql"]).Options;
             _userService = userService;
         }
 
-        public void Enqueue(int charId, string refreshToken)
+        public void Enqueue(long charId, string refreshToken)
         {
             lock (_objs)
             {
@@ -45,13 +48,13 @@ namespace Killboard.Service.Util
             }
         }
 
-        public bool IsInQueue(int charId) => _objs.Any(c => c.charId == charId);
+        public bool IsInQueue(long charId) => _objs.Any(c => c.charId == charId);
 
-        private void ProcessQueuedItems(object ignored)
+        private async void ProcessQueuedItems(object ignored)
         {
             while (true)
             {
-                (int charId, string refreshToken) item;
+                (long charId, string refreshToken) item;
                 lock (_objs)
                 {
                     if (_objs.Count == 0)
@@ -60,14 +63,14 @@ namespace Killboard.Service.Util
                         break;
                     }
 
-                    item = _objs.Dequeue();
+                    if(!_objs.TryDequeue(out item)) continue;
                 }
 
                 try
                 {
                     _logger.LogInformation($"Processing Refresh Token for Character ID {item.charId}");
 
-                    RefreshToken(item).RunSynchronously();
+                    await RefreshToken(item);
                 }
                 catch (DbUpdateException ex)
                 {
@@ -82,12 +85,12 @@ namespace Killboard.Service.Util
             }
         }
 
-        private async Task RefreshToken((int charId, string refreshToken) obj)
+        private async Task RefreshToken((long charId, string refreshToken) obj)
         {
             var callback = await _userService.RefreshToken(_esiClientId, _esiSecretKey, obj.refreshToken);
             if (callback == null) return;
 
-            await using var ctx = new KillboardContext();
+            await using var ctx = new KillboardContext(_dbContextOptions);
             var at = ctx.access_tokens.FirstOrDefault(a => a.refresh_token == obj.refreshToken);
 
             if (at == null) return;

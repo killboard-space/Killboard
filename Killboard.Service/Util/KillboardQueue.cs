@@ -2,9 +2,10 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System;
-using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Linq;
 using System.Threading;
+using Microsoft.Extensions.Configuration;
 
 namespace Killboard.Service.Util
 {
@@ -12,13 +13,15 @@ namespace Killboard.Service.Util
     {
         private bool _delegateQueuedOrRunning;
 
-        private readonly Queue<killmails> _objs = new Queue<killmails>();
+        private readonly ConcurrentQueue<killmails> _objs = new ConcurrentQueue<killmails>();
 
         private readonly ILogger<KillboardQueue> _logger;
+        private readonly DbContextOptions<KillboardContext> _dbContextOptions;
 
-        public KillboardQueue(ILogger<KillboardQueue> logger)
+        public KillboardQueue(ILogger<KillboardQueue> logger, IConfiguration configuration)
         {
             _logger = logger;
+            _dbContextOptions = new DbContextOptionsBuilder<KillboardContext>().UseSqlServer(configuration["Killboard:Sql"]).Options;
         }
 
         public void Enqueue(killmails obj)
@@ -49,7 +52,7 @@ namespace Killboard.Service.Util
                         break;
                     }
 
-                    item = _objs.Dequeue();
+                    if(!_objs.TryDequeue(out item)) continue;
                 }
 
                 try
@@ -71,9 +74,9 @@ namespace Killboard.Service.Util
             }
         }
 
-        private static void AddObjectToDatabase(killmails obj)
+        private void AddObjectToDatabase(killmails obj)
         {
-            using var ctx = new KillboardContext();
+            using var ctx = new KillboardContext(_dbContextOptions);
             
             if (ctx.killmails.Any(k => k.killmail_id == obj.killmail_id)) return;
 

@@ -21,7 +21,7 @@ namespace Killboard.Domain.Interfaces
         Task<List<GetCharacter>> GetCharacters(int userId);
         Task<Dictionary<int, string>> GetCharacterList(int userId);
         Task<GetCharacter> GetCharacter(int characterId);
-        Task<GetCharacterDetail> GetCharacterDetail(int characterId);
+        Task<GetCharacterDetail> GetCharacterDetail(long characterId);
         Task<GetCorporationDetail> GetCorporationDetail(int corporationId);
         Task<GetAllianceDetail> GetAllianceDetail(int allianceId);
     }

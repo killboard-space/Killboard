@@ -4,7 +4,7 @@ namespace Killboard.Data.Models
 {
     public partial class character_scopes
     {
-        public int char_id { get; set; }
+        public long char_id { get; set; }
         public int scope_id { get; set; }
         public bool approved { get; set; }
 

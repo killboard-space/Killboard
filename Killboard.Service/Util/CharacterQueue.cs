@@ -2,9 +2,10 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System;
-using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Linq;
 using System.Threading;
+using Microsoft.Extensions.Configuration;
 
 namespace Killboard.Service.Util
 {
@@ -12,13 +13,16 @@ namespace Killboard.Service.Util
     {
         private bool _delegateQueuedOrRunning;
 
-        private readonly Queue<characters> _objs = new Queue<characters>();
+        private readonly ConcurrentQueue<characters> _objs = new ConcurrentQueue<characters>();
 
         private readonly ILogger<CharacterQueue> _logger;
+        private readonly DbContextOptions<KillboardContext> _dbContextOptions;
 
-        public CharacterQueue(ILogger<CharacterQueue> logger)
+        public CharacterQueue(ILogger<CharacterQueue> logger, IConfiguration configuration)
         {
             _logger = logger;
+            _dbContextOptions = new DbContextOptionsBuilder<KillboardContext>()
+                .UseSqlServer(configuration["Killboard:Sql"]).Options;
         }
 
         public void Enqueue(characters obj)
@@ -34,7 +38,7 @@ namespace Killboard.Service.Util
             }
         }
 
-        public bool IsInQueue(int charId) => _objs.Any(a => a.character_id == charId);
+        public bool IsInQueue(long charId) => _objs.Any(a => a.character_id == charId);
 
         private void ProcessQueuedItems(object ignored)
         {
@@ -49,7 +53,7 @@ namespace Killboard.Service.Util
                         break;
                     }
 
-                    item = _objs.Dequeue();
+                    if (!_objs.TryDequeue(out item)) continue;
                 }
 
                 try
@@ -71,9 +75,9 @@ namespace Killboard.Service.Util
             }
         }
 
-        private static void AddObjectToDatabase(characters obj)
+        private void AddObjectToDatabase(characters obj)
         {
-            using var ctx = new KillboardContext();
+            using var ctx = new KillboardContext(_dbContextOptions);
             
             if (ctx.characters.Any(k => k.character_id == obj.character_id)) return;
 

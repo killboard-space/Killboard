@@ -16,13 +16,13 @@ namespace Killboard.Domain.DTO.Killmail
         public string ShipName { get; set; }
         public int ShipID { get; set; }
         public string VictimName { get; set; }
-        public int VictimCharacterID { get; set; }
+        public long VictimCharacterID { get; set; }
         public string VictimCorporationName { get; set; }
         public int VictimCorporationID { get; set; }
         public string VictimAllianceName { get; set; }
         public int? VictimAllianceID { get; set; }
         public string FinalBlowName { get; set; }
-        public int FinalBlowID { get; set; }
+        public long FinalBlowID { get; set; }
         public int AttackerCount { get; set; }
     }
 }

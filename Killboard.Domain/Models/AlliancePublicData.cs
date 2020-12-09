@@ -9,7 +9,7 @@ namespace Killboard.Domain.Models
         public int CreatorCorporationID { get; set; }
 
         [JsonProperty("creator_id")]
-        public int CreatorID { get; set; }
+        public long? CreatorID { get; set; }
 
         [JsonProperty("date_founded")]
         public DateTime DateFounded { get; set; }

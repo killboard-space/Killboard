@@ -22,7 +22,7 @@ namespace Killboard.Service
     public class KillmailWorker : BackgroundService
     {
         private const int MaxRetryCount = 10;
-        private const int Delay = 180000;
+        private const int Delay = 60000;
         private const string EsiUrl = "https://esi.evetech.net/latest/";
 
         private readonly HttpClient _client = new HttpClient()
@@ -43,9 +43,9 @@ namespace Killboard.Service
         /// 
         /// </summary>
         /// <param name="logger"></param>
-        /// <param name="userService"></param>
         /// <param name="configuration"></param>
         /// <param name="killboardQueue"></param>
+        /// <param name="refreshTokenQueue"></param>
         public KillmailWorker(ILogger<KillmailWorker> logger, IConfiguration configuration,
                       KillboardQueue killboardQueue, RefreshTokenQueue refreshTokenQueue)
         {
@@ -54,7 +54,7 @@ namespace Killboard.Service
             _killboardQueue = killboardQueue;
             _refreshTokenQueue = refreshTokenQueue;
 
-            _dbContextOptions = new DbContextOptionsBuilder<KillboardContext>().UseSqlServer(_configuration.GetValue<string>("Killboard:Sql")).Options;
+            _dbContextOptions = new DbContextOptionsBuilder<KillboardContext>().UseSqlServer(_configuration["Killboard:Sql"]).Options;
         }
 
         /// <summary>
@@ -132,7 +132,7 @@ namespace Killboard.Service
         /// <exception cref="HttpRequestException"></exception>
         /// <exception cref="ArgumentNullException"></exception>
         /// <exception cref="ArgumentException"></exception>
-        private void GetCharacterKillmails(int charId, string accessToken)
+        private void GetCharacterKillmails(long charId, string accessToken)
         {
             _logger.LogDebug($"[Killboard Service] Getting Killmails for Character: {charId}");
 
@@ -237,7 +237,7 @@ namespace Killboard.Service
         /// and this Framework are not set in stone.
         /// </remarks>
         /// <returns>A list of <see cref="int"/> representing existing.</returns>
-        private List<int> GetExistingCharKMIds(int charId)
+        private List<int> GetExistingCharKMIds(long charId)
         {
             using var ctx = new KillboardContext(_dbContextOptions);
             return (from km in ctx.killmails
@@ -253,11 +253,12 @@ namespace Killboard.Service
                     select km.killmail_id).ToList();
         }
 
-        private void RefreshTokens(IDictionary<int, string> tokens)
+        private void RefreshTokens(IDictionary<long, string> tokens)
         {
             foreach (var (charId, refreshToken) in tokens)
             {
-                _refreshTokenQueue.Enqueue(charId, refreshToken);
+                if(!_refreshTokenQueue.IsInQueue(charId))
+                    _refreshTokenQueue.Enqueue(charId, refreshToken);
             }
         }
 
@@ -267,16 +268,16 @@ namespace Killboard.Service
         /// <returns>
         /// A Dictionary of valid Character Ids & tokens.
         /// </returns>
-        private async Task<Dictionary<int, string>> GetValidTokens()
+        private async Task<Dictionary<long, string>> GetValidTokens()
         {
             await using var ctx = new KillboardContext(_dbContextOptions);
             var refreshTokens = ctx.access_tokens
-                .Where(a => EF.Functions.DateDiffMinute(DateTime.Now, a.expires_on) + 300 <= 0)
+                .Where(a => a.expires_on <= DateTime.Now)
                 .ToDictionary(a => a.char_id, a => a.refresh_token);
             
             if(refreshTokens.Count > 0) await Task.Run(() => RefreshTokens(refreshTokens));
             
-            return ctx.access_tokens.Where(a => EF.Functions.DateDiffMinute(DateTime.Now, a.expires_on) + 300 > 0)
+            return ctx.access_tokens.Where(a => a.expires_on > DateTime.Now)
                 .ToDictionary(a => a.char_id, a => a.access_token);
         }
     }

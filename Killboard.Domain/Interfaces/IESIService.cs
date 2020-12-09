@@ -8,6 +8,6 @@ namespace Killboard.Domain.Interfaces
 {
     public interface IESIService
     {
-        Task<PublicDataModel> GetPublicData(int charID);
+        Task<PublicDataModel> GetPublicData(long charID);
     }
 }

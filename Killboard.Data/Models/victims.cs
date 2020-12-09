@@ -6,7 +6,9 @@ namespace Killboard.Data.Models
     {
         public int victim_id { get; set; }
         public int killmail_id { get; set; }
-        public int char_id { get; set; }
+        public long? char_id { get; set; }
+        public long? corporation_id { get; set; }
+        public long? alliance_id { get; set; }
         public int damage_taken { get; set; }
         public int? faction_id { get; set; }
         public int position_id { get; set; }

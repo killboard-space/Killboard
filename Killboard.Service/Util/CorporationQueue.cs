@@ -2,9 +2,10 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System;
-using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Linq;
 using System.Threading;
+using Microsoft.Extensions.Configuration;
 
 namespace Killboard.Service.Util
 {
@@ -12,13 +13,16 @@ namespace Killboard.Service.Util
     {
         private bool _delegateQueuedOrRunning;
 
-        private readonly Queue<corporations> _objs = new Queue<corporations>();
+        private readonly ConcurrentQueue<corporations> _objs = new ConcurrentQueue<corporations>();
 
         private readonly ILogger<CorporationQueue> _logger;
+        private readonly DbContextOptions<KillboardContext> _dbContextOptions;
 
-        public CorporationQueue(ILogger<CorporationQueue> logger)
+        public CorporationQueue(ILogger<CorporationQueue> logger, IConfiguration configuration)
         {
             _logger = logger;
+            _dbContextOptions = new DbContextOptionsBuilder<KillboardContext>()
+                .UseSqlServer(configuration["Killboard:Sql"]).Options;
         }
 
         public void Enqueue(corporations obj)
@@ -49,7 +53,7 @@ namespace Killboard.Service.Util
                         break;
                     }
 
-                    item = _objs.Dequeue();
+                    if (!_objs.TryDequeue(out item)) continue;
                 }
 
                 try
@@ -71,9 +75,9 @@ namespace Killboard.Service.Util
             }
         }
 
-        private static void AddObjectToDatabase(corporations obj)
+        private void AddObjectToDatabase(corporations obj)
         {
-            using var ctx = new KillboardContext();
+            using var ctx = new KillboardContext(_dbContextOptions);
             
             if (ctx.corporations.Any(k => k.corporation_id == obj.corporation_id)) return;
 

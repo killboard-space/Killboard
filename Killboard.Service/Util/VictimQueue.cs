@@ -2,9 +2,10 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System;
-using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Linq;
 using System.Threading;
+using Microsoft.Extensions.Configuration;
 
 namespace Killboard.Service.Util
 {
@@ -12,13 +13,15 @@ namespace Killboard.Service.Util
     {
         private bool _delegateQueuedOrRunning;
 
-        private readonly Queue<victims> _objs = new Queue<victims>();
+        private readonly ConcurrentQueue<victims> _objs = new ConcurrentQueue<victims>();
 
         private readonly ILogger<VictimQueue> _logger;
-
-        public VictimQueue(ILogger<VictimQueue> logger)
+        private readonly DbContextOptions<KillboardContext> _dbContextOptions;
+        public VictimQueue(ILogger<VictimQueue> logger, IConfiguration configuration)
         {
             _logger = logger;
+            _dbContextOptions = new DbContextOptionsBuilder<KillboardContext>()
+                .UseSqlServer(configuration["Killboard:Sql"]).Options;
         }
 
         public void Enqueue(victims obj)
@@ -34,7 +37,7 @@ namespace Killboard.Service.Util
             }
         }
 
-        public bool IsInQueue(int killmailId, int charId) => _objs.Any(a => a.killmail_id == killmailId && a.char_id == charId);
+        public bool IsInQueue(int killmailId, long charId) => _objs.Any(a => a.killmail_id == killmailId && a.char_id == charId);
 
         private void ProcessQueuedItems(object ignored)
         {
@@ -49,7 +52,7 @@ namespace Killboard.Service.Util
                         break;
                     }
 
-                    item = _objs.Dequeue();
+                    if(!_objs.TryDequeue(out item)) continue;
                 }
 
                 try
@@ -71,9 +74,9 @@ namespace Killboard.Service.Util
             }
         }
 
-        private static void AddObjectToDatabase(victims obj)
+        private void AddObjectToDatabase(victims obj)
         {
-            using var ctx = new KillboardContext();
+            using var ctx = new KillboardContext(_dbContextOptions);
             
             if (ctx.victims.Any(k => k.killmail_id == obj.killmail_id && k.char_id == obj.char_id)) return;
 

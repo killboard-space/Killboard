@@ -6,7 +6,7 @@ namespace Killboard.Data.Models
     public partial class access_tokens
     {
         public int id { get; set; }
-        public int char_id { get; set; }
+        public long char_id { get; set; }
         public string access_token { get; set; }
         public string refresh_token { get; set; }
         public DateTime date_added { get; set; }

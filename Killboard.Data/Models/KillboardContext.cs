@@ -136,8 +136,8 @@ namespace Killboard.Data.Models
 
             modelBuilder.Entity<attackers>(entity =>
             {
-                entity.HasKey(e => new { e.char_id, e.killmail_id })
-                    .HasName("PK_attackers_char_id_killmail_id");
+                entity.HasKey(e => e.attacker_id)
+                    .HasName("PK__attacker__6F3A32BE0397E8F6");
 
                 entity.HasOne(d => d.killmail_)
                     .WithMany(p => p.attackers)

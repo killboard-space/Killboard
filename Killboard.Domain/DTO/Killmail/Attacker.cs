@@ -8,13 +8,13 @@ namespace Killboard.Domain.DTO.Killmail
     public class Attacker
     {
         [JsonProperty("alliance_id")]
-        public long AllianceId { get; set; }
+        public int? AllianceId { get; set; }
 
         [JsonProperty("character_id")]
-        public long CharacterId { get; set; }
+        public long? CharacterId { get; set; }
 
         [JsonProperty("corporation_id")]
-        public long CorporationId { get; set; }
+        public int? CorporationId { get; set; }
 
         [JsonProperty("damage_done")]
         public long DamageDone { get; set; }

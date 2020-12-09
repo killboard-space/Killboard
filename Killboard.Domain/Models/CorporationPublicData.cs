@@ -9,10 +9,10 @@ namespace Killboard.Domain.Models
         public int? AllianceID { get; set; }
 
         [JsonProperty("ceo_id")]
-        public int CeoID { get; set; }
+        public long? CeoID { get; set; }
 
         [JsonProperty("creator_id")]
-        public int CreatorID { get; set; }
+        public long? CreatorID { get; set; }
 
         [JsonProperty("date_founded", NullValueHandling = NullValueHandling.Ignore)]
         public DateTime? DateFounded { get; set; }

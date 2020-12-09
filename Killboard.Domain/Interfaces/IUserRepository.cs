@@ -18,6 +18,6 @@ namespace Killboard.Domain.Interfaces
         bool ChangePassword(ChangeRequest request);
         string GetEmail(int id);
         List<GetCharacter> GetCharacters(int id);
-        Dictionary<int, string> GetCharactersList(int id);
+        Dictionary<long, string> GetCharactersList(int id);
     }
 }

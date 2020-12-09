@@ -2,9 +2,10 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System;
-using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Linq;
 using System.Threading;
+using Microsoft.Extensions.Configuration;
 
 namespace Killboard.Service.Util
 {
@@ -12,13 +13,16 @@ namespace Killboard.Service.Util
     {
         private bool _delegateQueuedOrRunning;
 
-        private readonly Queue<attackers> _objs = new Queue<attackers>();
+        private readonly ConcurrentQueue<attackers> _objs = new ConcurrentQueue<attackers>();
 
         private readonly ILogger<AttackerQueue> _logger;
+        private readonly DbContextOptions<KillboardContext> _dbContextOptions;
 
-        public AttackerQueue(ILogger<AttackerQueue> logger)
+        public AttackerQueue(ILogger<AttackerQueue> logger, IConfiguration configuration)
         {
             _logger = logger;
+            _dbContextOptions = new DbContextOptionsBuilder<KillboardContext>()
+                .UseSqlServer(configuration["Killboard:Sql"]).Options;
         }
 
         public void Enqueue(attackers obj)
@@ -33,7 +37,10 @@ namespace Killboard.Service.Util
             }
         }
 
-        public bool IsInQueue(int charId, int killmailId) => _objs.Any(a => a.char_id == charId && a.killmail_id == killmailId);
+        public bool IsInQueue(int killmailId, long? charId = null, int? corpId = null, int? allianceId = null) =>
+            _objs.Any(a => a.killmail_id == killmailId && (charId.HasValue && a.char_id == charId||
+                                                           corpId.HasValue && a.corporation_id == corpId ||
+                                                           allianceId.HasValue && a.alliance_id == allianceId));
 
         private void ProcessQueuedItems(object ignored)
         {
@@ -48,7 +55,7 @@ namespace Killboard.Service.Util
                         break;
                     }
 
-                    item = _objs.Dequeue();
+                    if (!_objs.TryDequeue(out item)) continue;
                 }
 
                 try
@@ -70,9 +77,9 @@ namespace Killboard.Service.Util
             }
         }
 
-        private static void AddObjectToDatabase(attackers obj)
+        private void AddObjectToDatabase(attackers obj)
         {
-            using var ctx = new KillboardContext();
+            using var ctx = new KillboardContext(_dbContextOptions);
             
             if (ctx.attackers.Any(k => k.char_id == obj.char_id && k.killmail_id == obj.killmail_id)) return;
 

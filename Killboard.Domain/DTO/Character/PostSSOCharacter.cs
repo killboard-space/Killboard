@@ -6,7 +6,7 @@ namespace Killboard.Domain.DTO.Character
 {
     public class PostSSOCharacter
     {
-        public int char_id { get; set; }
+        public long char_id { get; set; }
         public string access_token { get; set; }
         public int expires_in { get; set; }
         public string token_type { get; set; }

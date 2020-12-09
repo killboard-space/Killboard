@@ -3,14 +3,15 @@ using System.Collections.Generic;
 using System.Data.SqlTypes;
 using System.Linq;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 using Killboard.Data.Models;
 using Killboard.Domain.DTO.Killmail;
 using Killboard.Domain.Models;
-using Killboard.Service.Interfaces;
 using Killboard.Service.Util;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using TableDependency.SqlClient;
@@ -19,7 +20,7 @@ using TableDependency.SqlClient.Base.EventArgs;
 
 namespace Killboard.Service.Services
 {
-    public class KillmailTableSubscription : IDatabaseSubscription
+    public class KillmailTableSubscription : IHostedService
     {
         private bool _disposedValue;
         private const string EsiUrl = "https://esi.evetech.net/latest/";
@@ -30,9 +31,8 @@ namespace Killboard.Service.Services
             Timeout = TimeSpan.FromSeconds(15)
         };
 
-        private SqlTableDependency<killmails> _tableDependency;
-
         private readonly ILogger<KillmailTableSubscription> _logger;
+
         private readonly VictimQueue _victimQueue;
         private readonly AttackerQueue _attackerQueue;
         private readonly DroppedItemQueue _itemQueue;
@@ -40,6 +40,7 @@ namespace Killboard.Service.Services
         private readonly CorporationQueue _corpQueue;
         private readonly AllianceQueue _allianceQueue;
 
+        private readonly SqlTableDependency<killmails> _tableDependency;
         private readonly DbContextOptions<KillboardContext> _dbContextOptions;
 
         public KillmailTableSubscription(ILogger<KillmailTableSubscription> logger, IConfiguration configuration, 
@@ -56,19 +57,29 @@ namespace Killboard.Service.Services
             _allianceQueue = allianceQueue;
 
             _dbContextOptions = new DbContextOptionsBuilder<KillboardContext>().UseSqlServer(configuration["Killboard:Sql"]).Options;
+
+            _tableDependency = new SqlTableDependency<killmails>(configuration["Killboard:Sql"], "killmails");
+            _tableDependency.OnChanged += Changed;
+            _tableDependency.OnError += TableDependency_OnError;
+        }
+
+        public Task StartAsync(CancellationToken cancellationToken)
+        {
+            _tableDependency.Start();
+            _logger.LogInformation("[SQLTableDependency] Waiting to receive notifications...");
+
+            return Task.CompletedTask;
+        }
+
+        public Task StopAsync(CancellationToken cancellationToken)
+        {
+            _tableDependency.Stop();
+            _logger.LogInformation("[SQLTableDependency] Shutting down...");
+
+            return Task.CompletedTask;
         }
 
         #region SqlTableDependency
-
-        public void Configure(string connectionString)
-        {
-            _tableDependency = new SqlTableDependency<killmails>(connectionString);
-            _tableDependency.OnChanged += Changed;
-            _tableDependency.OnError += TableDependency_OnError;
-            _tableDependency.Start();
-
-            Console.WriteLine("[SQLTableDependency] Waiting for receiving notifications...");
-        }
 
         private void TableDependency_OnError(object sender, ErrorEventArgs e)
         {
@@ -77,9 +88,10 @@ namespace Killboard.Service.Services
 
         private async void Changed(object sender, RecordChangedEventArgs<killmails> e)
         {
-            if (e.ChangeType == ChangeType.Insert) return;
+            if (e.ChangeType != ChangeType.Insert) return;
+
             var newEntity = e.Entity;
-            _logger.LogInformation($"[SQLTableDependency] Found new Killmail: {newEntity.killmail_id} | {newEntity.hash}");
+            _logger.LogInformation($"[SQLTableDependency] New Killmail: {newEntity.killmail_id} | {newEntity.hash}");
             await GetKMDetail(newEntity.killmail_id, newEntity.hash);
         }
 
@@ -105,16 +117,16 @@ namespace Killboard.Service.Services
                         StartProcessingKillmail(killmailId, killmailDetail.KillmailTime.DateTime,
                             (int) killmailDetail.SolarSystemId);
 
-                        await AddVicitim(killmailDetail.Victim, killmailId);
+                        await AddVicitim(killmailDetail.Victim, killmailId, hash);
 
-                        await AddAttackers(killmailDetail.Attackers, killmailId);
+                        await AddAttackers(killmailDetail.Attackers, killmailId, hash);
 
                         if (killmailDetail.Victim.Items != null && killmailDetail.Victim.Items.Length > 0)
                             AddDroppedItems(killmailDetail.Victim.Items, killmailId);
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogError(ex.Message);
+                        _logger.LogError($"[KillmailDetail Service] Failed Processing Killmail: {killmailId} | {hash}\n\tMessage:{ex.Message}\nTrace:{ex.StackTrace}");
 
                         ResetKillmail(killmailId);
                     }
@@ -130,7 +142,7 @@ namespace Killboard.Service.Services
             }
         }
 
-        private async Task GetPublicData(int characterId, bool isCreatorOrCEO = false)
+        private async Task GetPublicData(long characterId, int killmailId, string hash, bool isCreatorOrCEO = false)
         {
             var response = await _client.GetAsync($"{EsiUrl}characters/{characterId}");
 
@@ -142,16 +154,16 @@ namespace Killboard.Service.Services
                 {
                     var data = JsonConvert.DeserializeObject<PublicDataModel>(jsonStr);
 
-                    if (data != null) await AddPublicData(data, characterId, isCreatorOrCEO);
+                    if (data != null) await AddPublicData(data, characterId, killmailId, hash, isCreatorOrCEO);
                 }
             }
             else
             {
-                _logger.LogError($"[KillmailDetail Service] Error while getting public data CharacterID: {characterId} | {response.ReasonPhrase}");
+                _logger.LogError($"[KillmailDetail Service] Error while getting public data CharacterID: {characterId} | Id: {killmailId} | Hash: {hash} | {response.ReasonPhrase}");
             }
         }
 
-        private async Task GetAlliancePublicData(int allianceId)
+        private async Task GetAlliancePublicData(int allianceId, int killmailId, string hash)
         {
             var response = await _client.GetAsync($"{EsiUrl}alliances/{allianceId}");
 
@@ -163,7 +175,7 @@ namespace Killboard.Service.Services
                 {
                     var data = JsonConvert.DeserializeObject<AlliancePublicData>(jsonStr);
 
-                    if (data != null) await AddAllianceData(data, allianceId);
+                    if (data != null) await AddAllianceData(data, allianceId, killmailId, hash);
                 }
             }
             else
@@ -172,7 +184,7 @@ namespace Killboard.Service.Services
             }
         }
 
-        private async Task GetCorporationPublicData(int corporationId)
+        private async Task GetCorporationPublicData(int corporationId, int killmailId, string hash)
         {
             var response = await _client.GetAsync($"{EsiUrl}corporations/{corporationId}");
 
@@ -184,7 +196,7 @@ namespace Killboard.Service.Services
                 {
                     var data = JsonConvert.DeserializeObject<CorporationPublicData>(jsonStr);
 
-                    if (data != null) await AddCorporationPublicData(data, corporationId);
+                    if (data != null) await AddCorporationPublicData(data, corporationId, killmailId, hash);
                 }
             }
             else
@@ -197,15 +209,15 @@ namespace Killboard.Service.Services
 
         #region DB Queries
 
-        private async Task AddPublicData(PublicDataModel data, int characterId, bool isCreatorOrCeo = false)
+        private async Task AddPublicData(PublicDataModel data, long characterId, int killmailId, string hash, bool isCreatorOrCeo = false)
         {
             await using var ctx = new KillboardContext(_dbContextOptions);
 
             if (data.alliance_id.HasValue && !ctx.alliances.Any(a => a.alliance_id == data.alliance_id) && !_allianceQueue.IsInQueue(data.alliance_id.Value))
-                await GetAlliancePublicData((int)data.alliance_id);
+                await GetAlliancePublicData((int)data.alliance_id, killmailId, hash);
 
             if (!isCreatorOrCeo && !ctx.corporations.Any(c => c.corporation_id == data.corporation_id) && !_corpQueue.IsInQueue(data.corporation_id))
-                await GetCorporationPublicData(data.corporation_id);
+                await GetCorporationPublicData(data.corporation_id, killmailId, hash);
 
             if (!_characterQueue.IsInQueue(characterId))
             {
@@ -226,21 +238,21 @@ namespace Killboard.Service.Services
             }
         }
 
-        private async Task AddCorporationPublicData(CorporationPublicData data, int corporationId)
+        private async Task AddCorporationPublicData(CorporationPublicData data, int corporationId, int killmailId, string hash)
         {
             await using var ctx = new KillboardContext(_dbContextOptions);
 
             if (data.AllianceID.HasValue && !ctx.alliances.Any(a => a.alliance_id == data.AllianceID) && !_allianceQueue.IsInQueue(data.AllianceID.Value))
-                await GetAlliancePublicData(data.AllianceID.Value);
+                await GetAlliancePublicData(data.AllianceID.Value, killmailId, hash);
 
-            if (!ctx.characters.Any(c => c.character_id == data.CeoID) && !_characterQueue.IsInQueue(data.CeoID))
-                await GetPublicData(data.CeoID, true);
+            if (data.CeoID.HasValue && !ctx.characters.Any(c => c.character_id == data.CeoID) && !_characterQueue.IsInQueue(data.CeoID.Value))
+                await GetPublicData(data.CeoID.Value, killmailId, hash, true);
 
-            if (ctx.characters.Any(c => c.character_id == data.CeoID && c.corporation_id != corporationId))
-                await UpdateCharacterLoyalty(data.CeoID, corporationId, data.AllianceID.GetValueOrDefault());
+            if (data.CeoID.HasValue && ctx.characters.Any(c => c.character_id == data.CeoID && c.corporation_id != corporationId))
+                await UpdateCharacterLoyalty(data.CeoID.Value, corporationId, data.AllianceID.GetValueOrDefault(), killmailId, hash);
 
-            if (!ctx.characters.Any(c => c.character_id == data.CreatorID) && !_characterQueue.IsInQueue(data.CreatorID))
-                await GetPublicData(data.CreatorID, true);
+            if (data.CreatorID.HasValue && !ctx.characters.Any(c => c.character_id == data.CreatorID) && !_characterQueue.IsInQueue(data.CreatorID.Value))
+                await GetPublicData(data.CreatorID.Value, killmailId, hash, true);
 
             if (!_corpQueue.IsInQueue(corporationId))
             {
@@ -261,7 +273,7 @@ namespace Killboard.Service.Services
             }
         }
 
-        private async Task AddAllianceData(AlliancePublicData data, int allianceId)
+        private async Task AddAllianceData(AlliancePublicData data, int allianceId, int killmailId, string hash)
         {
             await using var ctx = new KillboardContext(_dbContextOptions);
 
@@ -277,35 +289,35 @@ namespace Killboard.Service.Services
 
                 // Add Founding Corp
                 if (!ctx.corporations.Any(c => c.corporation_id == data.CreatorCorporationID) && !_corpQueue.IsInQueue(data.CreatorCorporationID))
-                    await GetCorporationPublicData(data.CreatorCorporationID);
+                    await GetCorporationPublicData(data.CreatorCorporationID, killmailId, hash);
 
                 // Add Founder
-                if (!ctx.characters.Any(c => c.character_id == data.CreatorID) && !_characterQueue.IsInQueue(data.CreatorID))
-                    await GetPublicData(data.CreatorID, true);
+                if (data.CreatorID.HasValue && !ctx.characters.Any(c => c.character_id == data.CreatorID) && !_characterQueue.IsInQueue(data.CreatorID.Value))
+                    await GetPublicData(data.CreatorID.Value, killmailId, hash, true);
 
                 // Add Executor Corp
                 if (data.ExecutorCorporationID.HasValue && !ctx.corporations.Any(c => c.corporation_id == data.ExecutorCorporationID) && !_corpQueue.IsInQueue(data.ExecutorCorporationID.Value))
-                    await GetCorporationPublicData(data.ExecutorCorporationID.Value);
+                    await GetCorporationPublicData(data.ExecutorCorporationID.Value, killmailId, hash);
             }
         }
 
-        private async Task AddVicitim(Victim victim, int killmailId)
+        private async Task AddVicitim(Victim victim, int killmailId, string hash)
         {
             await using var ctx = new KillboardContext(_dbContextOptions);
 
-            if (!ctx.characters.Any(c => c.character_id == victim.CharacterId) && !_characterQueue.IsInQueue((int)victim.CharacterId))
-                await GetPublicData((int)victim.CharacterId);
+            if (victim.CharacterId.HasValue && !ctx.characters.Any(c => c.character_id == victim.CharacterId) && !_characterQueue.IsInQueue(victim.CharacterId.Value))
+                await GetPublicData(victim.CharacterId.Value, killmailId, hash);
 
-            if (ctx.characters.Any(c => c.character_id == victim.CharacterId && c.corporation_id != victim.CorporationId))
-                await UpdateCharacterLoyalty((int)victim.CharacterId, (int)victim.CorporationId, (int)victim.AllianceId.GetValueOrDefault());
+            if (victim.CharacterId.HasValue && victim.CorporationId.HasValue && victim.AllianceId.HasValue && !ctx.characters.Any(c => c.character_id == victim.CharacterId && c.corporation_id != victim.CorporationId))
+                await UpdateCharacterLoyalty(victim.CharacterId.Value, victim.CorporationId.Value, victim.AllianceId.Value, killmailId, hash);
 
-            if (!ctx.corporations.Any(c => c.corporation_id == victim.CorporationId) && !_corpQueue.IsInQueue((int)victim.CorporationId))
-                await GetCorporationPublicData((int)victim.CorporationId);
+            if (victim.CorporationId.HasValue && !ctx.corporations.Any(c => c.corporation_id == victim.CorporationId) && !_corpQueue.IsInQueue((int)victim.CorporationId))
+                await GetCorporationPublicData(victim.CorporationId.Value, killmailId, hash);
 
             if (victim.AllianceId.HasValue && !ctx.alliances.Any(a => a.alliance_id == victim.AllianceId) && !_allianceQueue.IsInQueue((int)victim.AllianceId.Value))
-                await GetAlliancePublicData((int)victim.AllianceId.Value);
+                await GetAlliancePublicData(victim.AllianceId.Value, killmailId, hash);
 
-            if (!_victimQueue.IsInQueue(killmailId, (int)victim.CharacterId))
+            if (victim.CharacterId.HasValue && !_victimQueue.IsInQueue(killmailId, victim.CharacterId.Value))
             {
                 // The time in between checking the Queue, Querying the DB and then continuing is worrying.
                 var km = ctx.killmails.FirstOrDefault(k => k.killmail_id == killmailId);
@@ -324,7 +336,9 @@ namespace Killboard.Service.Services
                     {
                         _victimQueue.Enqueue(new victims
                         {
-                            char_id = (int)victim.CharacterId,
+                            char_id = victim.CharacterId,
+                            corporation_id = victim.CorporationId,
+                            alliance_id = victim.AllianceId,
                             damage_taken = (int)victim.DamageTaken,
                             killmail_id = killmailId,
                             ship_type_id = (int)victim.ShipTypeId,
@@ -335,30 +349,32 @@ namespace Killboard.Service.Services
             }
         }
 
-        private async Task AddAttackers(IEnumerable<Attacker> attackers, int killmailId)
+        private async Task AddAttackers(IEnumerable<Attacker> attackers, int killmailId, string hash)
         {
             await using var ctx = new KillboardContext(_dbContextOptions);
 
             foreach (var attacker in attackers)
             {
-                if (!ctx.characters.Any(c => c.character_id == attacker.CharacterId) && !_characterQueue.IsInQueue((int)attacker.CharacterId))
-                    await GetPublicData((int)attacker.CharacterId);
+                if (attacker.CharacterId.HasValue && !ctx.characters.Any(c => c.character_id == attacker.CharacterId) && !_characterQueue.IsInQueue(attacker.CharacterId.Value))
+                    await GetPublicData(attacker.CharacterId.Value, killmailId, hash);
 
-                if (ctx.characters.Any(c => c.character_id == attacker.CharacterId && c.corporation_id != attacker.CorporationId))
-                    await UpdateCharacterLoyalty((int)attacker.CharacterId, (int)attacker.CorporationId, (int)attacker.AllianceId);
+                if (attacker.CharacterId.HasValue && attacker.CorporationId.HasValue && attacker.AllianceId.HasValue && ctx.characters.Any(c => c.character_id == attacker.CharacterId && c.corporation_id != attacker.CorporationId))
+                    await UpdateCharacterLoyalty(attacker.CharacterId.Value, attacker.CorporationId.Value, attacker.AllianceId.Value, killmailId, hash);
 
-                if (!ctx.corporations.Any(c => c.corporation_id == attacker.CorporationId) && !_corpQueue.IsInQueue((int)attacker.CorporationId))
-                    await GetCorporationPublicData((int)attacker.CorporationId);
+                if (attacker.CorporationId.HasValue && !ctx.corporations.Any(c => c.corporation_id == attacker.CorporationId) && !_corpQueue.IsInQueue(attacker.CorporationId.Value))
+                    await GetCorporationPublicData(attacker.CorporationId.Value, killmailId, hash);
 
-                if (attacker.AllianceId != default && !ctx.alliances.Any(a => a.alliance_id == attacker.AllianceId) && !_allianceQueue.IsInQueue((int)attacker.AllianceId))
-                    await GetAlliancePublicData((int)attacker.AllianceId);
+                if (attacker.AllianceId.HasValue && !ctx.alliances.Any(a => a.alliance_id == attacker.AllianceId) && !_allianceQueue.IsInQueue(attacker.AllianceId.Value))
+                    await GetAlliancePublicData(attacker.AllianceId.Value, killmailId, hash);
 
-                if (!_attackerQueue.IsInQueue((int)attacker.CharacterId, killmailId))
+                if (!_attackerQueue.IsInQueue(killmailId, attacker.CharacterId, attacker.CorporationId, attacker.AllianceId))
                 {
                     _attackerQueue.Enqueue(new attackers
                     {
                         killmail_id = killmailId,
-                        char_id = (int)attacker.CharacterId,
+                        char_id = attacker.CharacterId,
+                        corporation_id = attacker.CorporationId,
+                        alliance_id = attacker.AllianceId,
                         damage_done = (int)attacker.DamageDone,
                         final_blow = attacker.FinalBlow,
                         ship_type_id = (int)attacker.ShipTypeId,
@@ -383,15 +399,15 @@ namespace Killboard.Service.Services
             itemsToAdd.ForEach(a => _itemQueue.Enqueue(a));
         }
 
-        private async Task UpdateCharacterLoyalty(int characterId, int corporationId, int allianceId)
+        private async Task UpdateCharacterLoyalty(long characterId, int corporationId, int allianceId, int killmailId, string hash)
         {
             await using var ctx = new KillboardContext(_dbContextOptions);
 
             if (!ctx.corporations.Any(c => c.corporation_id == corporationId) && !_corpQueue.IsInQueue(corporationId))
-                await GetCorporationPublicData(corporationId);
+                await GetCorporationPublicData(corporationId, killmailId, hash);
 
             if (allianceId != default && !ctx.alliances.Any(a => a.alliance_id == allianceId) && !_allianceQueue.IsInQueue(allianceId))
-                await GetAlliancePublicData(allianceId);
+                await GetAlliancePublicData(allianceId, killmailId, hash);
 
             var character = ctx.characters.FirstOrDefault(c => c.character_id == characterId);
 
