@@ -19,7 +19,7 @@ namespace Killboard.Data.Models
 
         public int type_id { get; set; }
         public string name { get; set; }
-        public int? capacity { get; set; }
+        public float? capacity { get; set; }
         public string description { get; set; }
         public int group_id { get; set; }
         public int? icon_id { get; set; }
