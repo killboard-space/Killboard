@@ -58,7 +58,12 @@ namespace Killboard.Tools
                 }
             }
 
-            AllSystems = await _cache.GetOrCreateAsync("AllSystems", async entry => await _apiService.GetAllSystems());
+            AllSystems = await _cache.GetOrCreateAsync("AllSystems", async entry => 
+            {
+                entry.SetAbsoluteExpiration(TimeSpan.FromHours(1));
+                entry.SetSlidingExpiration(TimeSpan.FromHours(1));
+                return await _apiService.GetAllSystems();
+            });
 
             return Page();
         }
@@ -86,7 +91,13 @@ namespace Killboard.Tools
             }
             else
             {
-                var systemsInRange = await _apiService.GetSystemsWithinRange(fromSystemId, jumps);
+                var systemsInRange = await _cache.GetOrCreateAsync(new { fromSystemId, jumps }, async entry =>
+                {
+                    entry.SetAbsoluteExpiration(TimeSpan.FromMinutes(30));
+                    entry.SetSlidingExpiration(TimeSpan.FromMinutes(15));
+                    return await _apiService.GetSystemsWithinRange(fromSystemId, jumps);
+                });
+;
                 return new JsonResult(systemsInRange);
             }
         }

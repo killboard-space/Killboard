@@ -8,6 +8,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using TableDependency.SqlClient;
 using TableDependency.SqlClient.Base.EventArgs;
+using System.Threading.Tasks;
 
 namespace Killboard.Domain.Services
 {
@@ -26,20 +27,20 @@ namespace Killboard.Domain.Services
             _scope = services.CreateScope();
 
             _tableDependency = new SqlTableDependency<killmails>(configuration["Killboard:Sql"], TableName);
-            _tableDependency.OnChanged += TableDependency_Changed;
+            _tableDependency.OnChanged += TableDependency_ChangedAsync;
             _tableDependency.Start();
         }
 
-        private void TableDependency_Changed(object sender, RecordChangedEventArgs<killmails> e)
+        private async void TableDependency_ChangedAsync(object sender, RecordChangedEventArgs<killmails> e)
         {
-            if(e.Entity.finished_processing != null)
-                BroadcastKillmail(e.Entity);
+            if(e.Entity.finished_processing != null) await BroadcastKillmail(e.Entity);
         }
 
-        private void BroadcastKillmail(killmails km)
+        private async Task BroadcastKillmail(killmails km)
         {
             using var kmService = _scope.ServiceProvider.GetRequiredService<IKillmailService>();
-            _hub.Clients.All.SendAsync("NewKillmail", kmService.GetAllKillmails(ListTypes.EXACT, km.killmail_id));
+            var kms = await kmService.GetAllKillmails(ListTypes.EXACT, km.killmail_id);
+            await _hub.Clients.All.SendAsync("NewKillmail", kms);
         }
 
         public void Dispose()

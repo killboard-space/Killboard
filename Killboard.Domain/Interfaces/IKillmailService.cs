@@ -4,11 +4,12 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using Killboard.Domain.Services;
+using System.Threading.Tasks;
 
 namespace Killboard.Domain.Interfaces
 {
     public interface IKillmailService : IDisposable
     {
-        List<ListDetail> GetAllKillmails(ListTypes type = ListTypes.ALL, int? filter = null);
+        Task<IEnumerable<ListDetail>> GetAllKillmails(ListTypes type = ListTypes.ALL, int? filter = null);
     }
 }
