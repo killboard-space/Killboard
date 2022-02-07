@@ -5,6 +5,7 @@ using Killboard.Domain.Params;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Killboard.Domain.Repositories
 {
@@ -57,6 +58,49 @@ namespace Killboard.Domain.Repositories
             if (!_ctx.systems.Any(a => a.system_id == fromSystem)) throw new ApplicationException("Initial system invalid!");
 
             return GetDistanceMap(fromSystem).Where(d => d.Value <= range).Select(d => d.Key).ToList();
+        }
+
+        public async Task<IEnumerable<SystemRangeResult>> GetSystemsInJumpRange(int fromSystem, int shipId, int jdcLevel)
+        {
+            if (jdcLevel < 1 || jdcLevel > 5) throw new ApplicationException("Invalid JDC level. Must be between 1-5");
+
+            if (!_ctx.systems.Any(a => a.system_id == fromSystem)) throw new ApplicationException("Initial system invalid!");
+
+            if (!_ctx.items.Any(a => a.type_id == shipId)) throw new ApplicationException("Invalid shipID provided!");
+
+            // 867 - Max Range dogma_attribute attribute_id 
+            if (!_ctx.item_attributes.Any(a => a.attribute_id == 867 && a.type_id == shipId))
+                throw new ApplicationException("The ship provided does not have a jump drive!");
+
+            var defaultMaxRange = _ctx.item_attributes.Where(a => a.attribute_id == 867 && a.type_id == shipId)
+                .Select(a => a.value).FirstOrDefault();
+
+            if(defaultMaxRange == default) throw new ApplicationException("Error looking up the provided ship's jump range!");
+
+            // In lightyears (AU)
+            var calculatedMaxRange = defaultMaxRange * (1 + (0.2 * jdcLevel));
+
+            try
+            {
+                var systemsInRange = await _ctx.Procedures.procGetSystemsInJumpRangeAsync(fromSystem, shipId, jdcLevel);
+
+                if(systemsInRange?.Count >= 0)
+                {
+                    return systemsInRange.Select(s => new SystemRangeResult
+                    {
+                        SystemId = s.system_id,
+                        Name = s.name,
+                        SecurityStatus = s.security_status,
+                        Distance = s.distance
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new ApplicationException($"Error occured while looking up systems in range: {ex.Message}", ex);
+            }
+
+            return Enumerable.Empty<SystemRangeResult>();
         }
 
         private List<int> GetShortestPath(List<int> path, Dictionary<int, int> distanceMap, int toSystem)

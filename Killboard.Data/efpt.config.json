@@ -1,155 +1,182 @@
 ﻿{
+   "CodeGenerationMode": 0,
    "ContextClassName": "KillboardContext",
    "ContextNamespace": null,
    "DefaultDacpacSchema": null,
-   "DoNotCombineNamespace": false,
-   "IdReplace": false,
+   "FilterSchemas": false,
    "IncludeConnectionString": false,
    "ModelNamespace": null,
    "OutputContextPath": null,
    "OutputPath": "Models",
    "ProjectRootNamespace": "Killboard.Data",
+   "Schemas": null,
    "SelectedHandlebarsLanguage": 0,
    "SelectedToBeGenerated": 0,
    "Tables": [
       {
-         "HasPrimaryKey": true,
-         "Name": "[dbo].[access_tokens]"
+         "Name": "[dbo].[access_tokens]",
+         "ObjectType": 0
       },
       {
-         "HasPrimaryKey": true,
-         "Name": "[dbo].[alliances]"
+         "Name": "[dbo].[alliances]",
+         "ObjectType": 0
       },
       {
-         "HasPrimaryKey": true,
-         "Name": "[dbo].[ancestries]"
+         "Name": "[dbo].[ancestries]",
+         "ObjectType": 0
       },
       {
-         "HasPrimaryKey": true,
-         "Name": "[dbo].[asteroid_belts]"
+         "Name": "[dbo].[asteroid_belts]",
+         "ObjectType": 0
       },
       {
-         "HasPrimaryKey": true,
-         "Name": "[dbo].[attackers]"
+         "Name": "[dbo].[attackers]",
+         "ObjectType": 0
       },
       {
-         "HasPrimaryKey": true,
-         "Name": "[dbo].[bloodlines]"
+         "Name": "[dbo].[bloodlines]",
+         "ObjectType": 0
       },
       {
-         "HasPrimaryKey": true,
-         "Name": "[dbo].[categories]"
+         "Name": "[dbo].[categories]",
+         "ObjectType": 0
       },
       {
-         "HasPrimaryKey": true,
-         "Name": "[dbo].[character_scopes]"
+         "Name": "[dbo].[character_scopes]",
+         "ObjectType": 0
       },
       {
-         "HasPrimaryKey": true,
-         "Name": "[dbo].[characters]"
+         "Name": "[dbo].[characters]",
+         "ObjectType": 0
       },
       {
-         "HasPrimaryKey": true,
-         "Name": "[dbo].[constellations]"
+         "Name": "[dbo].[constellations]",
+         "ObjectType": 0
       },
       {
-         "HasPrimaryKey": true,
-         "Name": "[dbo].[corporations]"
+         "Name": "[dbo].[corporations]",
+         "ObjectType": 0
       },
       {
-         "HasPrimaryKey": true,
-         "Name": "[dbo].[dogma_attributes]"
+         "Name": "[dbo].[dogma_attributes]",
+         "ObjectType": 0
       },
       {
-         "HasPrimaryKey": true,
-         "Name": "[dbo].[dogma_effects]"
+         "Name": "[dbo].[dogma_effects]",
+         "ObjectType": 0
       },
       {
-         "HasPrimaryKey": true,
-         "Name": "[dbo].[dogma_modifiers]"
+         "Name": "[dbo].[dogma_modifiers]",
+         "ObjectType": 0
       },
       {
-         "HasPrimaryKey": true,
-         "Name": "[dbo].[dropped_items]"
+         "Name": "[dbo].[dropped_items]",
+         "ObjectType": 0
       },
       {
-         "HasPrimaryKey": true,
-         "Name": "[dbo].[factions]"
+         "Name": "[dbo].[factions]",
+         "ObjectType": 0
       },
       {
-         "HasPrimaryKey": true,
-         "Name": "[dbo].[flags]"
+         "Name": "[dbo].[flags]",
+         "ObjectType": 0
       },
       {
-         "HasPrimaryKey": true,
-         "Name": "[dbo].[groups]"
+         "Name": "[dbo].[groups]",
+         "ObjectType": 0
       },
       {
-         "HasPrimaryKey": true,
-         "Name": "[dbo].[items]"
+         "Name": "[dbo].[item_attributes]",
+         "ObjectType": 0
       },
       {
-         "HasPrimaryKey": true,
-         "Name": "[dbo].[killmails]"
+         "Name": "[dbo].[item_effects]",
+         "ObjectType": 0
       },
       {
-         "HasPrimaryKey": true,
-         "Name": "[dbo].[moons]"
+         "Name": "[dbo].[items]",
+         "ObjectType": 0
       },
       {
-         "HasPrimaryKey": true,
-         "Name": "[dbo].[planets]"
+         "Name": "[dbo].[killmails]",
+         "ObjectType": 0
       },
       {
-         "HasPrimaryKey": true,
-         "Name": "[dbo].[positions]"
+         "Name": "[dbo].[moons]",
+         "ObjectType": 0
       },
       {
-         "HasPrimaryKey": true,
-         "Name": "[dbo].[races]"
+         "Name": "[dbo].[planets]",
+         "ObjectType": 0
       },
       {
-         "HasPrimaryKey": true,
-         "Name": "[dbo].[regions]"
+         "Name": "[dbo].[positions]",
+         "ObjectType": 0
       },
       {
-         "HasPrimaryKey": true,
-         "Name": "[dbo].[reset_requests]"
+         "Name": "[dbo].[races]",
+         "ObjectType": 0
       },
       {
-         "HasPrimaryKey": true,
-         "Name": "[dbo].[scopes]"
+         "Name": "[dbo].[regions]",
+         "ObjectType": 0
       },
       {
-         "HasPrimaryKey": true,
-         "Name": "[dbo].[stargates]"
+         "Name": "[dbo].[reset_requests]",
+         "ObjectType": 0
       },
       {
-         "HasPrimaryKey": true,
-         "Name": "[dbo].[stars]"
+         "Name": "[dbo].[scopes]",
+         "ObjectType": 0
       },
       {
-         "HasPrimaryKey": true,
-         "Name": "[dbo].[stations]"
+         "Name": "[dbo].[stargates]",
+         "ObjectType": 0
       },
       {
-         "HasPrimaryKey": true,
-         "Name": "[dbo].[systems]"
+         "Name": "[dbo].[stars]",
+         "ObjectType": 0
       },
       {
-         "HasPrimaryKey": true,
-         "Name": "[dbo].[users]"
+         "Name": "[dbo].[stations]",
+         "ObjectType": 0
       },
       {
-         "HasPrimaryKey": true,
-         "Name": "[dbo].[victims]"
+         "Name": "[dbo].[systems]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[users]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[victims]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[procGetKillmailDetails]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[procGetSystemsInJumpRange]",
+         "ObjectType": 1
       }
    ],
+   "UiHint": "WIN-BE99HUV66CC.killboard_space",
+   "UseBoolPropertiesWithoutDefaultSql": false,
    "UseDatabaseNames": true,
    "UseDbContextSplitting": false,
    "UseFluentApiOnly": true,
    "UseHandleBars": false,
    "UseInflector": false,
    "UseLegacyPluralizer": false,
+   "UseManyToManyEntity": false,
+   "UseNoConstructor": false,
+   "UseNoDefaultConstructor": false,
+   "UseNoNavigations": false,
+   "UseNoObjectFilter": false,
+   "UseNodaTime": false,
+   "UseNullableReferences": false,
+   "UseSchemaFolders": false,
    "UseSpatial": false
 }

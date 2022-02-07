@@ -1,9 +1,7 @@
-﻿using Killboard.Domain.DTO.Universe.Stargate;
-using Killboard.Domain.DTO.Universe.System;
+﻿using Killboard.Domain.DTO.Universe.System;
 using Killboard.Domain.Params;
-using System;
 using System.Collections.Generic;
-using System.Text;
+using System.Threading.Tasks;
 
 namespace Killboard.Domain.Interfaces
 {
@@ -13,5 +11,6 @@ namespace Killboard.Domain.Interfaces
         GetSystem GetSystem(int systemId);
         List<int> GetRoute(int fromSystem, int toSystem);
         List<int> GetSystemsInRange(int fromSystem, int range);
+        Task<IEnumerable<SystemRangeResult>> GetSystemsInJumpRange(int fromSystem, int shipId, int jdcLevel);
     }
 }

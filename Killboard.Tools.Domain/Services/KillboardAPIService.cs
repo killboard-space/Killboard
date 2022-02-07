@@ -12,7 +12,7 @@ namespace Killboard.Tools.Domain.Services
 {
     public class KillboardAPIService : IKillboardAPIService
     {
-        public HttpClient Client { get; set; }
+        private readonly HttpClient _httpClient;
 
         private readonly IConfiguration _configuration;
 
@@ -20,13 +20,13 @@ namespace Killboard.Tools.Domain.Services
         {
             _configuration = configuration;
             client.BaseAddress = new Uri(_configuration.GetSection("API_URL").Value);
-            Client = client;
+            _httpClient = client;
         }
 
         public async Task<int[]> GetSystemsWithinRange(int systemId, int jumps)
         {
             var systemsInRange = Array.Empty<int>();
-            await Client.GetAsync($"/api/Route/range/{systemId}/{jumps}")
+            await _httpClient.GetAsync($"/api/Route/range/{systemId}/{jumps}")
                 .ContinueWith(async (routeSearch) =>
                 {
                     var response = await routeSearch;
@@ -49,7 +49,10 @@ namespace Killboard.Tools.Domain.Services
 
             do
             {
-                await Client.GetAsync(string.Format(nextUrl, currentPage))
+
+                try
+                {
+                    await _httpClient.GetAsync(string.Format(nextUrl, currentPage))
                     .ContinueWith(async (systemSearch) =>
                     {
                         var response = await systemSearch;
@@ -68,6 +71,13 @@ namespace Killboard.Tools.Domain.Services
                             }
                         }
                     });
+                }
+                catch (Exception e)
+                {
+
+                    throw;
+                }
+                
             } while (currentPage <= totalPages);
             return systems;
         }

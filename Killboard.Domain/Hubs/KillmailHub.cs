@@ -3,6 +3,7 @@ using Killboard.Domain.Enums;
 using Killboard.Domain.Interfaces;
 using Microsoft.AspNetCore.SignalR;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Killboard.Domain.Hubs
 {
@@ -15,9 +16,9 @@ namespace Killboard.Domain.Hubs
             _kmService = kmService;
         }
 
-        public IEnumerable<ListDetail> GetAllKillmails(ListTypes type = ListTypes.ALL, int? filter = null)
+        public async Task<IEnumerable<ListDetail>> GetAllKillmails(ListTypes type = ListTypes.ALL, int? filter = null)
         {
-            return _kmService.GetAllKillmails(type, filter);
+            return await _kmService.GetAllKillmails(type, filter);
         }
     }
 }
