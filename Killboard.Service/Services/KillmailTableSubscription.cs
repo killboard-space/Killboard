@@ -441,26 +441,28 @@ namespace Killboard.Service.Services
 
             if (km != null)
             {
-                var listDetail = ctx.procGetKillmailDetails.FromSqlInterpolated($"EXEC procGetKillmailDetails {killmailId}").ToList().Select(k => new ListDetail
+
+                var killmails = await ctx.Procedures.procGetKillmailDetailsAsync(killmailId, null, null, null, null, null, null, null, null, null);
+                var listDetail = killmails.Select(k => new ListDetail
                 {
                     KillmailID = killmailId,
                     KillmailHash = hash,
-                    VictimCharacterID = k.victim_character_id,
-                    VictimName = k.victim_name,
-                    VictimAllianceID = k.alliance_id,
-                    VictimCorporationID = k.corporation_id,
-                    VictimCorporationName = k.corporation_name,
-                    VictimAllianceName = k.alliance_name,
-                    FinalBlowID = k.final_blow_char,
-                    FinalBlowName = k.final_blow_char_name,
-                    AttackerCount = k.attackers,
-                    ShipID = k.ship_type_id,
-                    SystemID = k.system_id,
-                    SystemName = k.system_name,
-                    RegionID = k.region_id,
-                    RegionName = k.region_name,
-                    KillmailTime = k.killmail_time,
-                    ShipName = k.ship_name
+                    VictimCharacterID = k.VictimCharacterId,
+                    VictimName = k.VictimName,
+                    VictimAllianceID = k.VictimeAllianceId,
+                    VictimCorporationID = k.VictimCorporationId,
+                    VictimCorporationName = k.VictimCorporationName,
+                    VictimAllianceName = k.VictimAllianceName,
+                    FinalBlowID = k.FinalBlowCharId,
+                    FinalBlowName = k.FinalBlowCharName,
+                    AttackerCount = k.Attackers ?? 0,
+                    ShipID = k.ShipTypeId,
+                    SystemID = k.SystemId,
+                    SystemName = k.SystemName,
+                    RegionID = k.RegionId,
+                    RegionName = k.RegionName,
+                    KillmailTime = k.KillmailTime ?? DateTime.Now,
+                    ShipName = k.ShipName
                 }).FirstOrDefault();
 
                 if (listDetail != default)
