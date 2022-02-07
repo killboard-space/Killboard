@@ -62,6 +62,8 @@ namespace Killboard.Domain.Repositories
 
         public async Task<IEnumerable<SystemRangeResult>> GetSystemsInJumpRange(int fromSystem, int shipId, int jdcLevel)
         {
+            if (jdcLevel < 1 || jdcLevel > 5) throw new ApplicationException("Invalid JDC level. Must be between 1-5");
+
             if (!_ctx.systems.Any(a => a.system_id == fromSystem)) throw new ApplicationException("Initial system invalid!");
 
             if (!_ctx.items.Any(a => a.type_id == shipId)) throw new ApplicationException("Invalid shipID provided!");
